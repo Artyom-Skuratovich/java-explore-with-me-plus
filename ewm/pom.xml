@@ -10,6 +10,10 @@
     </parent>
 
     <artifactId>ewm</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>service</module>
+    </modules>
 
     <modules>
         <module>service</module>
