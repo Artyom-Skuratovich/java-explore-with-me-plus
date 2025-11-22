@@ -1,4 +1,4 @@
-package ru.practicum.stats.server.statistics.controller;
+package ru.practicum.stats.service.statistics.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.stats.common.Constants;
 import ru.practicum.stats.dto.ViewStats;
-import ru.practicum.stats.server.statistics.service.StatsService;
+import ru.practicum.stats.service.statistics.service.StatsService;
 
 import java.time.LocalDateTime;
 import java.util.List;

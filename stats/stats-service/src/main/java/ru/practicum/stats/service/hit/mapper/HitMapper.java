@@ -1,8 +1,8 @@
-package ru.practicum.stats.server.hit.mapper;
+package ru.practicum.stats.service.hit.mapper;
 
 import ru.practicum.stats.dto.HitCreateDto;
 import ru.practicum.stats.dto.HitDto;
-import ru.practicum.stats.server.hit.model.Hit;
+import ru.practicum.stats.service.hit.model.Hit;
 
 public final class HitMapper {
     private HitMapper() {

@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>stats-client</module>
-        <module>stats-server</module>
+        <module>stats-service</module>
         <module>stats-dto</module>
     </modules>
 

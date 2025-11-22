@@ -1,4 +1,4 @@
-package ru.practicum.stats.server.hit.model;
+package ru.practicum.stats.service.hit.model;
 
 import jakarta.persistence.*;
 import lombok.Builder;
