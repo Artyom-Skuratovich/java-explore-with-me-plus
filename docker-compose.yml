@@ -6,13 +6,12 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      stats-db:
-        condition: service_healthy
+      - stats-db
     environment:
+      - SERVER_PORT=9090
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=824322
-    restart: on-failure
 
   stats-db:
     image: postgres:16.1
@@ -23,6 +22,30 @@ services:
       - POSTGRES_PASSWORD=824322
       - POSTGRES_USER=postgres
       - POSTGRES_DB=stats
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  ewm-service:
+    image: alpine:3.20
+    container_name: ewm-service
+    command: ["sh", "-c", "sleep infinity"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+
+  ewm-db:
+    image: postgres:16.1
+    container_name: postgres-ewm
+    ports:
+      - "6561:5432"
+    environment:
+      - POSTGRES_PASSWORD=824322
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=ewm
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
