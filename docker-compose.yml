@@ -27,3 +27,28 @@ services:
       timeout: 5s
       interval: 5s
       retries: 10
+
+  # --- заглушки для CI ---
+  ewm-service:
+    image: alpine:3.20
+    container_name: ewm-service
+    command: ["sh", "-c", "sleep infinity"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+
+  ewm-db:
+    image: postgres:16.1
+    container_name: postgres-ewm
+    ports:
+      - "6561:5432"
+    environment:
+      - POSTGRES_PASSWORD=824322
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=ewm
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
