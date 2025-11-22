@@ -1,7 +1,9 @@
 package ru.practicum.stats.client.exceptions;
 
-public class StatsClientException extends RuntimeException {
+import lombok.Getter;
 
+@Getter
+public class StatsClientException extends RuntimeException {
     private final int status;
     private final String responseBody;
 
@@ -11,11 +13,4 @@ public class StatsClientException extends RuntimeException {
         this.responseBody = responseBody;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public String getResponseBody() {
-        return responseBody;
-    }
 }
