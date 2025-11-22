@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class StatsClient {
-
     private final RestTemplate restTemplate;
     private final String serverUrl;
 
