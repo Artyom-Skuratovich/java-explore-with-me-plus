@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class StatsClientException extends RuntimeException {
-
     private final int status;
     private final String responseBody;
 
