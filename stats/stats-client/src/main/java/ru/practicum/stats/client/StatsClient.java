@@ -10,8 +10,8 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.practicum.dto.EndpointHit;
-import ru.practicum.dto.ViewStats;
+import ru.practicum.stats.dto.HitDto;
+import ru.practicum.stats.dto.ViewStats;
 import ru.practicum.stats.client.exceptions.StatsClientException;
 
 import java.net.URLEncoder;
@@ -55,12 +55,12 @@ public class StatsClient {
         this.restTemplate.setUriTemplateHandler(factory);
     }
 
-    public void hit(EndpointHit dto) {
+    public void hit(HitDto dto) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<EndpointHit> request = new HttpEntity<>(dto, headers);
+            HttpEntity<HitDto> request = new HttpEntity<>(dto, headers);
 
             restTemplate.exchange(
                     serverUrl + "/hit",

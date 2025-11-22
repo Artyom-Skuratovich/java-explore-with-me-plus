@@ -1,25 +1,15 @@
-package ru.practicum.dto;
+package ru.practicum.stats.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import ru.practicum.stats.common.Constants;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "endpoint_hits")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class EndpointHit {
-    @Id
-    private Long id;
-
+public class HitCreateDto {
     @NotBlank(message = "Приложение, из которого происходит вызов, должно быть указано.")
     private String app;
 
@@ -29,6 +19,7 @@ public class EndpointHit {
     @NotBlank(message = "IP Адрес, откуда происходит вызов, должен быть указан.")
     private String ip;
 
+    @JsonFormat(pattern = Constants.DATE_TIME_FORMAT)
     @NotNull(message = "Время вызова должно быть указано.")
     private LocalDateTime timestamp;
 }
