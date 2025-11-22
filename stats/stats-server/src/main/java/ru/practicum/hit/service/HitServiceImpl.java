@@ -9,7 +9,7 @@ import ru.practicum.hit.repository.HitRepository;
 @RequiredArgsConstructor
 public class HitServiceImpl implements HitService {
 
-    private HitRepository hitRepository;
+    private final HitRepository hitRepository;
 
     @Override
     public void save(EndpointHit endpointHit) {
