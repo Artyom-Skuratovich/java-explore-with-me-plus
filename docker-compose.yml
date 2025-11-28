@@ -1,5 +1,5 @@
 services:
-  stats-service:
+  stats-server:
     build: stats/stats-service
     image: stats-service
     container_name: stats-service
@@ -29,14 +29,18 @@ services:
       retries: 10
 
   ewm-service:
-    image: alpine:3.20
+    build: main-service
+    image: ewm-service
     container_name: ewm-service
-    command: ["sh", "-c", "sleep infinity"]
     ports:
       - "8080:8080"
     depends_on:
       - ewm-db
-
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=824322
   ewm-db:
     image: postgres:16.1
     container_name: postgres-ewm
