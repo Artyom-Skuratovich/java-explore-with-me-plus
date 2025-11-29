@@ -29,7 +29,9 @@ services:
       retries: 10
 
   ewm-service:
-    build: ./ewm/ewm-service
+    build:
+      context: .
+      dockerfile: ./ewm/ewm-service/Dockerfile
     image: ewm-service
     container_name: ewm-service
     ports:
@@ -56,3 +58,4 @@ services:
       timeout: 5s
       interval: 5s
       retries: 10
+
