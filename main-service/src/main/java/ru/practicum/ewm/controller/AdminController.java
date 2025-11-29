@@ -1,4 +1,4 @@
-package ru.practicum.ewm.compilation.controller;
+package ru.practicum.ewm.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,27 +10,27 @@ import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.ewm.compilation.service.CompilationService;
 
 @RestController
-@RequestMapping("/admin/compilations")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
-public class AdminCompilationController {
+public class AdminController {
 
     private final CompilationService compilationService;
 
-    @PostMapping
+    @PostMapping("/compilations")
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto create(@Valid @RequestBody NewCompilationDto dto) {
+    public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto dto) {
         return compilationService.createCompilation(dto);
     }
 
-    @DeleteMapping("/{compId}")
+    @DeleteMapping("/compilations/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long compId) {
+    public void deleteCompilation(@PathVariable Long compId) {
         compilationService.deleteCompilation(compId);
     }
 
-    @PatchMapping("/{compId}")
-    public CompilationDto update(@PathVariable Long compId,
-                                 @Valid @RequestBody UpdateCompilationRequest request) {
+    @PatchMapping("/compilations/{compId}")
+    public CompilationDto updateCompilation(@PathVariable Long compId,
+                                            @Valid @RequestBody UpdateCompilationRequest request) {
         return compilationService.updateCompilation(compId, request);
     }
 }
