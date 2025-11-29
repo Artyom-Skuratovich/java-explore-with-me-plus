@@ -1,18 +1,19 @@
 package ru.practicum.ewm.compilation.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
-import ru.practicum.ewm.event.dto.EventShortDto;
+import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,24 +33,23 @@ public class CompilationServiceImpl implements CompilationService {
                 ? Collections.emptyList()
                 : eventRepository.findAllById(dto.getEvents());
 
-        boolean pinned = dto.getPinned() != null ? dto.getPinned() : false;
-
-        Compilation compilation = Compilation.builder()
-                .title(dto.getTitle())
-                .pinned(pinned)
-                .events(events)
-                .build();
-
+        Compilation compilation = CompilationMapper.toEntity(dto, events);
         compilation = compilationRepository.save(compilation);
-        return toDto(compilation);
+
+        return CompilationMapper.toDto(
+                compilation,
+                EventMapper.toShortDtoList(compilation.getEvents())
+        );
     }
 
     @Override
     @Transactional
     public void deleteCompilation(Long compId) {
         if (!compilationRepository.existsById(compId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Compilation with id=" + compId + " was not found");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Compilation with id=" + compId + " was not found"
+            );
         }
         compilationRepository.deleteById(compId);
     }
@@ -60,7 +60,8 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Compilation with id=" + compId + " was not found"));
+                        "Compilation with id=" + compId + " was not found"
+                ));
 
         if (request.getTitle() != null) {
             compilation.setTitle(request.getTitle());
@@ -76,27 +77,10 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         compilation = compilationRepository.save(compilation);
-        return toDto(compilation);
-    }
 
-    private CompilationDto toDto(Compilation compilation) {
-        List<EventShortDto> eventDtos = compilation.getEvents() == null
-                ? Collections.emptyList()
-                : compilation.getEvents().stream()
-                .map(this::toEventShortDto)
-                .toList();
-
-        return CompilationDto.builder()
-                .id(compilation.getId())
-                .title(compilation.getTitle())
-                .pinned(compilation.isPinned())
-                .events(eventDtos)
-                .build();
-    }
-
-    private EventShortDto toEventShortDto(Event event) {
-        EventShortDto dto = new EventShortDto();
-        //заполнить поля, когда будет готова структуру EventShortDto
-        return dto;
+        return CompilationMapper.toDto(
+                compilation,
+                EventMapper.toShortDtoList(compilation.getEvents())
+        );
     }
 }
