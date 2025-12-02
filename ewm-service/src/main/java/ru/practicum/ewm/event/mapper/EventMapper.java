@@ -6,6 +6,7 @@ import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.user.mapper.UserMapper;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class EventMapper {
                 .title(event.getTitle())
                 .annotation(event.getAnnotation())
                 .eventDate(event.getEventDate())
-                .initiator(null)
+                .initiator(UserMapper.toShortDto(event.getInitiator()))
                 .category(CategoryMapper.toDto(event.getCategory()))
                 .build();
     }
@@ -36,7 +37,7 @@ public class EventMapper {
                 .title(event.getTitle())
                 .annotation(event.getAnnotation())
                 .eventDate(event.getEventDate())
-                .initiator(null)
+                .initiator(UserMapper.toShortDto(event.getInitiator()))
                 .category(CategoryMapper.toDto(event.getCategory()))
                 .location(event.getLocation())
                 .createdOn(event.getCreatedOn())
