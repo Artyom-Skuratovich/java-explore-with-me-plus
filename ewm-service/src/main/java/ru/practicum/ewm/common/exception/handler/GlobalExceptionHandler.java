@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.common.exception.BadRequestException;
+import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.stats.common.Constants;
 
@@ -34,6 +35,17 @@ public class GlobalExceptionHandler {
                 .timestamp(getTimestampAsString())
                 .build();
         return ResponseEntity.status(404).body(error);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiError> handleConflictException(ConflictException e) {
+        final ApiError error = ApiError.builder()
+                .status("CONFLICT")
+                .reason("Integrity constraint has been violated")
+                .message(e.getMessage())
+                .timestamp(getTimestampAsString())
+                .build();
+        return ResponseEntity.status(409).body(error);
     }
 
     private static String getTimestampAsString() {

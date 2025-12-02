@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.repository.CategoryRepository;
-import ru.practicum.ewm.exceptions.CategoryNotFoundException;
+import ru.practicum.ewm.common.exception.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +32,6 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto getCategory(Long catId) {
         return categoryRepository.findById(catId)
                 .map(CategoryMapper::toDto)
-                .orElseThrow(() -> new CategoryNotFoundException("Category with id=" + catId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
     }
 }

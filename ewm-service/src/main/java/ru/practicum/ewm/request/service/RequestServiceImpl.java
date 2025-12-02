@@ -3,11 +3,12 @@ package ru.practicum.ewm.request.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.common.exception.ConflictException;
+import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.ValidationException;
-import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
@@ -45,7 +46,7 @@ public class RequestServiceImpl implements RequestService {
         Long participantActual = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
         if (event.getParticipantLimit() != 0) {
             if (participantActual >= event.getParticipantLimit()) {
-                throw new ValidationException("Превышено количество одобренных заявок");
+                throw new ConflictException("Превышено количество одобренных заявок");
             }
         }
         for (Long id : updateRequest.getRequestIds()) {
