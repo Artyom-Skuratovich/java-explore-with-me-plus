@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ErrorResponse {
+public class ApiError {
     private String status;
     private String reason;
     private String message;

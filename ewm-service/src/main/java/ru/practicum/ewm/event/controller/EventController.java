@@ -38,7 +38,9 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public EventFullDto find(@PathVariable long id) {
-        return null;
+    public EventFullDto find(
+            @PathVariable long id,
+            HttpServletRequest request) {
+        return eventService.find(id, request);
     }
 }

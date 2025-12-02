@@ -21,5 +21,5 @@ public interface EventService {
                                 int size,
                                 HttpServletRequest request);
 
-    EventFullDto find(long id);
+    EventFullDto find(long id, HttpServletRequest request);
 }

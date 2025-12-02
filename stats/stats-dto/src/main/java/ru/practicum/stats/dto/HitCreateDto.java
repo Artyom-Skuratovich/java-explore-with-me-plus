@@ -3,12 +3,14 @@ package ru.practicum.stats.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import ru.practicum.stats.common.Constants;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class HitCreateDto {
     @NotBlank(message = "Приложение, из которого происходит вызов, должно быть указано.")
     private String app;
