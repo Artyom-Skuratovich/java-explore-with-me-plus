@@ -15,6 +15,9 @@ public class MinHoursFromNowValidator implements ConstraintValidator<MinHoursFro
 
     @Override
     public boolean isValid(LocalDateTime value, ConstraintValidatorContext constraintValidatorContext) {
-        return value != null && !value.isBefore(LocalDateTime.now().plusHours(hours));
+        if (value == null) {
+            return true;
+        }
+        return !value.isBefore(LocalDateTime.now().plusHours(hours));
     }
 }

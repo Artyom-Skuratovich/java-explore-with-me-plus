@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiError> handleConflictException(ConflictException e) {
         final ApiError error = ApiError.builder()
-                .status("CONFLICT")
+                .status(e.getStatus())
                 .reason("Integrity constraint has been violated")
                 .message(e.getMessage())
                 .timestamp(getTimestampAsString())

@@ -1,10 +1,6 @@
 package ru.practicum.ewm.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Builder;
 import lombok.Data;
@@ -16,34 +12,22 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class NewEventDto {
-    @NotBlank
+public class UpdateEventUserRequest {
     private String annotation;
-
-    @NotNull
     private Long category;
-
-    @NotBlank
     private String description;
 
     @JsonFormat(pattern = Constants.DATE_TIME_FORMAT)
-    @NotNull
     @MinHoursFromNow(hours = 2)
     private LocalDateTime eventDate;
 
-    @NotNull
     private Location location;
+    private Boolean paid;
 
-    @JsonSetter(nulls = Nulls.SKIP)
-    private boolean paid = false;
-
-    @JsonSetter(nulls = Nulls.SKIP)
     @PositiveOrZero
-    private int participantLimit = 0;
+    private Integer participantLimit;
 
-    @JsonSetter(nulls = Nulls.SKIP)
-    private boolean requestModeration = true;
-
-    @NotBlank
+    private StateAction stateAction;
+    private Boolean requestModeration;
     private String title;
 }

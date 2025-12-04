@@ -4,9 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
-import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.EventShortDto;
-import ru.practicum.ewm.event.dto.NewEventDto;
+import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.user.mapper.UserMapper;
@@ -69,5 +67,40 @@ public class EventMapper {
                 .initiator(initiator)
                 .state(EventState.PENDING)
                 .build();
+    }
+
+    public static Event updateProperties(Event event, UpdateEventUserRequest request) {
+        if (request.getRequestModeration() != null) {
+            event.setRequestModeration(request.getRequestModeration());
+        }
+        if (request.getPaid() != null) {
+            event.setPaid(request.getPaid());
+        }
+        if (request.getAnnotation() != null) {
+            event.setAnnotation(request.getAnnotation());
+        }
+        if (request.getDescription() != null) {
+            event.setDescription(request.getDescription());
+        }
+        if (request.getLocation() != null) {
+            event.setLocation(request.getLocation());
+        }
+        if (request.getEventDate() != null) {
+            event.setEventDate(request.getEventDate());
+        }
+        if (request.getParticipantLimit() != null) {
+            event.setParticipantLimit(request.getParticipantLimit());
+        }
+        if (request.getTitle() != null) {
+            event.setTitle(request.getTitle());
+        }
+
+        StateAction stateAction = request.getStateAction();
+        if (stateAction == StateAction.CANCEL_REVIEW) {
+            event.setState(EventState.CANCELED);
+        } else if (stateAction == StateAction.SEND_TO_REVIEW) {
+            event.setState(EventState.PENDING);
+        }
+        return event;
     }
 }

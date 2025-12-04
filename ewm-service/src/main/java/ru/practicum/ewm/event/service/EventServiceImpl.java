@@ -10,11 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.common.exception.BadRequestException;
+import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
-import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.EventShortDto;
-import ru.practicum.ewm.event.dto.EventSort;
-import ru.practicum.ewm.event.dto.NewEventDto;
+import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
@@ -105,7 +103,9 @@ public class EventServiceImpl implements EventService {
         final User initiator = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User with id=%d was not found", userId)));
         final Category category = categoryRepository.findById(eventDto.getCategory())
-                .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", eventDto.getCategory())));
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Category with id=%d was not found", eventDto.getCategory()))
+                );
         final Event saved = eventRepository.save(EventMapper.toEntity(eventDto, category, initiator));
         return mapToFullDto(saved);
     }
@@ -115,6 +115,29 @@ public class EventServiceImpl implements EventService {
         final Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
         return mapToFullDto(event);
+    }
+
+    @Transactional
+    @Override
+    public EventFullDto updateUserEvent(long userId, long eventId, UpdateEventUserRequest updateRequest) {
+        final Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+        if (event.getState() == EventState.PUBLISHED) {
+            throw new ConflictException(
+                    "Only pending or canceled events can be changed",
+                    "FORBIDDEN",
+                    "For the requested operation the conditions are not met"
+            );
+        }
+        if (updateRequest.getCategory() != null) {
+            final Category category = categoryRepository.findById(updateRequest.getCategory())
+                    .orElseThrow(() -> new NotFoundException(
+                            String.format("Category with id=%d was not found", updateRequest.getCategory()))
+                    );
+            event.setCategory(category);
+        }
+        final Event saved = eventRepository.save(EventMapper.updateProperties(event, updateRequest));
+        return mapToFullDto(saved);
     }
     // </editor-fold>
 

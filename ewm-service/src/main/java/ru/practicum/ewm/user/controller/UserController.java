@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.NewEventDto;
+import ru.practicum.ewm.event.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.event.service.EventService;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
@@ -78,5 +79,12 @@ public class UserController {
             @PathVariable long userId,
             @PathVariable long eventId) {
         return eventService.findUserEvent(userId, eventId);
+    }
+
+    public EventFullDto updateUserEvent(
+            @PathVariable long userId,
+            @PathVariable long eventId,
+            @Valid @RequestBody UpdateEventUserRequest updateRequest) {
+        return eventService.updateUserEvent(userId, eventId, updateRequest);
     }
 }

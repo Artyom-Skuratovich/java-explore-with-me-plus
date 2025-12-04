@@ -46,7 +46,7 @@ public class RequestServiceImpl implements RequestService {
         Long participantActual = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
         if (event.getParticipantLimit() != 0) {
             if (participantActual >= event.getParticipantLimit()) {
-                throw new ConflictException("Превышено количество одобренных заявок");
+                throw new ConflictException("Превышено количество одобренных заявок", "", "");
             }
         }
         for (Long id : updateRequest.getRequestIds()) {
