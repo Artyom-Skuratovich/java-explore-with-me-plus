@@ -1,4 +1,4 @@
-package ru.practicum.ewm.controller;
+package ru.practicum.ewm.admin.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import ru.practicum.ewm.compilation.service.CompilationService;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
-
     private final CompilationService compilationService;
 
     @PostMapping("/compilations")
@@ -29,8 +28,9 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    public CompilationDto updateCompilation(@PathVariable Long compId,
-                                            @Valid @RequestBody UpdateCompilationRequest request) {
+    public CompilationDto updateCompilation(
+            @PathVariable Long compId,
+            @Valid @RequestBody UpdateCompilationRequest request) {
         return compilationService.updateCompilation(compId, request);
     }
 }

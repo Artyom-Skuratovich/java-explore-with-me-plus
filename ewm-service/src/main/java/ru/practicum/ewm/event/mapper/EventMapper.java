@@ -3,11 +3,16 @@ package ru.practicum.ewm.event.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
+import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
+import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.user.mapper.UserMapper;
+import ru.practicum.ewm.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,6 +51,23 @@ public class EventMapper {
                 .requestModeration(event.isRequestModeration())
                 .state(event.getState())
                 .description(event.getDescription())
+                .build();
+    }
+
+    public static Event toEntity(NewEventDto newEventDto, Category category, User initiator) {
+        return Event.builder()
+                .annotation(newEventDto.getAnnotation())
+                .description(newEventDto.getDescription())
+                .eventDate(newEventDto.getEventDate())
+                .location(newEventDto.getLocation())
+                .paid(newEventDto.isPaid())
+                .participantLimit(newEventDto.getParticipantLimit())
+                .requestModeration(newEventDto.isRequestModeration())
+                .title(newEventDto.getTitle())
+                .createdOn(LocalDateTime.now())
+                .category(category)
+                .initiator(initiator)
+                .state(EventState.PENDING)
                 .build();
     }
 }

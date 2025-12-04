@@ -35,5 +35,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("onlyAvailable") boolean onlyAvailable,
             Pageable page);
 
+    @Query("SELECT e FROM Event e " +
+            "JOIN FETCH e.category " +
+            "JOIN FETCH e.initiator " +
+            "WHERE e.initiator.id = :initiatorId")
+    List<Event> findAllByInitiator(@Param("initiatorId") long initiatorId, Pageable page);
+
+    Optional<Event> findByIdAndInitiatorId(long id, long initiatorId);
+
     Optional<Event> findByIdAndState(long id, EventState state);
 }

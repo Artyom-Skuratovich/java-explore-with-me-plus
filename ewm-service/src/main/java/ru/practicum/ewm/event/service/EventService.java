@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.EventSort;
+import ru.practicum.ewm.event.dto.NewEventDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,4 +23,10 @@ public interface EventService {
                                 HttpServletRequest request);
 
     EventFullDto find(long id, HttpServletRequest request);
+
+    List<EventShortDto> findAllUserEvents(long userId, int from, int size);
+
+    EventFullDto createEvent(long userId, NewEventDto eventDto);
+
+    EventFullDto findUserEvent(long userId, long eventId);
 }
