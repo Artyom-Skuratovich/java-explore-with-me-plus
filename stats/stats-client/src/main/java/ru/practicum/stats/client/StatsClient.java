@@ -3,7 +3,6 @@ package ru.practicum.stats.client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -22,18 +21,21 @@ import java.util.Map;
 
 @Component
 public class StatsClient {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(Constants.DATE_TIME_FORMAT);
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern(Constants.DATE_TIME_FORMAT);
     private final RestTemplate rest;
 
     public StatsClient(@Value("${stats.server.url:http://stats-server:9090}") String serverUrl,
                        RestTemplateBuilder builder) {
         this.rest = builder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory())
                 .build();
     }
 
-    public List<ViewStats> findStats(LocalDateTime start, LocalDateTime end, Iterable<String> uris, Boolean unique) {
+    public List<ViewStats> findStats(LocalDateTime start,
+                                     LocalDateTime end,
+                                     Iterable<String> uris,
+                                     Boolean unique) {
         final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                 .queryParam("start", start.format(FORMATTER))
                 .queryParam("end", end.format(FORMATTER))
@@ -42,17 +44,22 @@ public class StatsClient {
             uris.forEach(uri -> builder.queryParam("uris", uri));
         }
         final String url = builder.build().toUriString();
-        final ResponseEntity<ViewStats[]> response = request(HttpMethod.GET, url, null, ViewStats[].class);
+        final ResponseEntity<ViewStats[]> response =
+                request(HttpMethod.GET, url, null, ViewStats[].class);
         final ViewStats[] body = response.getBody();
         return body == null ? List.of() : List.of(body);
     }
 
     public HitDto hit(HitCreateDto hit) {
-        final ResponseEntity<HitDto> response = request(HttpMethod.POST, "/hit", hit, HitDto.class);
+        final ResponseEntity<HitDto> response =
+                request(HttpMethod.POST, "/hit", hit, HitDto.class);
         return response.getBody();
     }
 
-    private <T> ResponseEntity<T> request(HttpMethod method, String url, Object body, Class<T> responseType) {
+    private <T> ResponseEntity<T> request(HttpMethod method,
+                                          String url,
+                                          Object body,
+                                          Class<T> responseType) {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -61,7 +68,12 @@ public class StatsClient {
         try {
             return rest.exchange(url, method, entity, responseType, Map.of());
         } catch (HttpStatusCodeException e) {
-            throw new StatsClientException(e.getStatusCode().value(), e.getResponseBodyAsString(), "Failed to get stats", e);
+            throw new StatsClientException(
+                    e.getStatusCode().value(),
+                    e.getResponseBodyAsString(),
+                    "Failed to get stats",
+                    e
+            );
         }
     }
 }
