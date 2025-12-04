@@ -46,8 +46,8 @@ services:
 
   ewm-service:
     build:
-      context: .
-      dockerfile: ./ewm/ewm-service/Dockerfile
+      context: ./ewm-service
+      dockerfile: Dockerfile
     image: ewm-service
     container_name: ewm-service
     ports:
