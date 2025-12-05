@@ -1,18 +1,29 @@
 package ru.practicum.ewm.admin.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.service.AdminCategoryService;
+import ru.practicum.ewm.user.dto.NewUserRequest;
+import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.service.AdminUserService;
+
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@Validated
 public class AdminController {
     private final AdminCategoryService categoryService;
+    private final AdminUserService userService;
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -32,5 +43,26 @@ public class AdminController {
             @PathVariable long id,
             @Valid @RequestBody NewCategoryDto category) {
         return categoryService.update(id, category);
+    }
+
+    @GetMapping("/users")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> findUsers(
+            @RequestParam(required = false) Set<Long> ids,
+            @PositiveOrZero @RequestParam(required = false, defaultValue = "0") int from,
+            @Positive @RequestParam(required = false, defaultValue = "10") int size) {
+        return userService.findUsersByIds(ids, from, size);
+    }
+
+    @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto createUser(@Valid @RequestBody NewUserRequest newUser) {
+        return userService.create(newUser);
+    }
+
+    @DeleteMapping("/users/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable long id) {
+        userService.delete(id);
     }
 }

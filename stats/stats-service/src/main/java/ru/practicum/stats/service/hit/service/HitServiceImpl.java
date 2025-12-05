@@ -14,8 +14,8 @@ import ru.practicum.stats.service.hit.repository.HitRepository;
 public class HitServiceImpl implements HitService {
     private final HitRepository hitRepository;
 
-    @Transactional
     @Override
+    @Transactional
     public HitDto create(HitCreateDto hitDto) {
         final Hit saved = hitRepository.save(HitMapper.mapToHit(hitDto));
         return HitMapper.mapToDto(saved);
