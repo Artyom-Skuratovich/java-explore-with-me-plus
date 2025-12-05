@@ -1,4 +1,4 @@
-package ru.practicum.stats.service.hit.model;
+package ru.practicum.ewm.category.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,24 +6,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @Entity
-@Table(name = "hits")
-@AllArgsConstructor
+@Table(name = "categories")
 @NoArgsConstructor
-public class Hit {
+@AllArgsConstructor
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String app;
-
-    private String uri;
-
-    private String ip;
-
-    private LocalDateTime timestamp;
+    @Column(unique = true)
+    private String name;
 }
