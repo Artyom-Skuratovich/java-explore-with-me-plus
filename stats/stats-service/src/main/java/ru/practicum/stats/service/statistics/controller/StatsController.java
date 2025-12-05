@@ -2,10 +2,8 @@ package ru.practicum.stats.service.statistics.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.stats.common.Constants;
 import ru.practicum.stats.dto.ViewStats;
 import ru.practicum.stats.service.statistics.service.StatsService;
@@ -20,6 +18,7 @@ public class StatsController {
     private final StatsService statsService;
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<ViewStats> findStats(
             @DateTimeFormat(pattern = Constants.DATE_TIME_FORMAT) @RequestParam LocalDateTime start,
             @DateTimeFormat(pattern = Constants.DATE_TIME_FORMAT) @RequestParam LocalDateTime end,
