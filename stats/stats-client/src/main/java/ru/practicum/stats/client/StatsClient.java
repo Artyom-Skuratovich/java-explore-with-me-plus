@@ -1,130 +1,84 @@
 package ru.practicum.stats.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientResponseException;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.practicum.stats.client.exception.StatsClientException;
+import ru.practicum.stats.common.StatsApiError;
+import ru.practicum.stats.dto.HitCreateDto;
 import ru.practicum.stats.dto.HitDto;
 import ru.practicum.stats.dto.ViewStats;
-import ru.practicum.stats.client.exceptions.StatsClientException;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
-public class StatsClient {
-    private final RestTemplate restTemplate;
-    private final String serverUrl;
+import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
 
-    public StatsClient(String serverUrl, RestTemplateBuilder builder) {
-        this.serverUrl = trimTrailingSlash(serverUrl);
-        this.restTemplate = builder
-                .uriTemplateHandler(new DefaultUriBuilderFactory(this.serverUrl))
+@Component
+public final class StatsClient {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+    private final RestTemplate rest;
+    private final ObjectMapper mapper;
+
+    public StatsClient(
+            @Value("${stats.server.url}") String serverUrl,
+            RestTemplateBuilder builder,
+            ObjectMapper mapper) {
+        this.rest = builder
+                .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                 .build();
-
-        ((DefaultUriBuilderFactory) this.restTemplate.getUriTemplateHandler())
-                .setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
+        this.mapper = mapper;
     }
 
-    public StatsClient(String serverUrl) {
-        this.serverUrl = trimTrailingSlash(serverUrl);
-
-        DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(this.serverUrl);
-        factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
-
-        this.restTemplate = new RestTemplate();
-        this.restTemplate.setUriTemplateHandler(factory);
-    }
-
-    public StatsClient(String serverUrl, RestTemplate restTemplate) {
-        this.serverUrl = trimTrailingSlash(serverUrl);
-
-        DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(this.serverUrl);
-        factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
-
-        this.restTemplate = restTemplate;
-        this.restTemplate.setUriTemplateHandler(factory);
-    }
-
-    public void hit(HitDto dto) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<HitDto> request = new HttpEntity<>(dto, headers);
-
-            restTemplate.exchange(
-                    serverUrl + "/hit",
-                    HttpMethod.POST,
-                    request,
-                    Void.class
-            );
-
-        } catch (RestClientResponseException e) {
-            throw new StatsClientException(
-                    e.getRawStatusCode(),
-                    e.getResponseBodyAsString(),
-                    "Failed to send hit",
-                    e
-            );
+    public List<ViewStats> findStats(LocalDateTime start,
+                                     LocalDateTime end,
+                                     Iterable<String> uris,
+                                     Boolean unique) {
+        final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                .queryParam("start", start.format(FORMATTER))
+                .queryParam("end", end.format(FORMATTER))
+                .queryParam("unique", unique);
+        if (uris != null) {
+            uris.forEach(uri -> builder.queryParam("uris", uri));
         }
+        final String url = builder.build().toUriString();
+        final ResponseEntity<ViewStats[]> response = request(HttpMethod.GET, url, null, ViewStats[].class);
+        final ViewStats[] body = response.getBody();
+        return body == null ? List.of() : List.of(body);
     }
 
-    public List<ViewStats> getStats(String start, String end, List<String> uris, boolean unique) {
+    public HitDto hit(HitCreateDto hit) {
+        final ResponseEntity<HitDto> response = request(HttpMethod.POST, "/hit", hit, HitDto.class);
+        return response.getBody();
+    }
+
+    private <T> ResponseEntity<T> request(HttpMethod method,
+                                          String url,
+                                          Object body,
+                                          Class<T> responseType) {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        final HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {
-            String encStart = encode(start);
-            String encEnd = encode(end);
-
-            UriComponentsBuilder builder = UriComponentsBuilder
-                    .fromHttpUrl(serverUrl + "/stats")
-                    .queryParam("start", encStart)
-                    .queryParam("end", encEnd)
-                    .queryParam("unique", unique);
-
-            if (uris != null && !uris.isEmpty()) {
-                for (String uri : uris) {
-                    builder.queryParam("uris", uri);
-                }
+            return rest.exchange(url, method, entity, responseType, Map.of());
+        } catch (HttpStatusCodeException e) {
+            final String errorMessage = "On the stats server, an unexpected error occurred";
+            try {
+                final StatsApiError response = mapper.readValue(e.getResponseBodyAsString(), StatsApiError.class);
+                throw new StatsClientException(errorMessage, response);
+            } catch (Throwable ignored) {
+                throw new StatsClientException(errorMessage, null);
             }
-
-            String url = builder.build(true).toUriString();
-
-            ResponseEntity<ViewStats[]> response =
-                    restTemplate.getForEntity(url, ViewStats[].class);
-
-            ViewStats[] body = response.getBody();
-            return body == null ? Collections.emptyList() : Arrays.asList(body);
-
-        } catch (RestClientResponseException e) {
-            throw new StatsClientException(
-                    e.getRawStatusCode(),
-                    e.getResponseBodyAsString(),
-                    "Failed to get stats",
-                    e
-            );
         }
-    }
-
-    public List<ViewStats> getStats(String start, String end, List<String> uris) {
-        return getStats(start, end, uris, false);
-    }
-
-    private String encode(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
-    }
-
-    private String trimTrailingSlash(String url) {
-        if (url == null) {
-            return "";
-        }
-        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }

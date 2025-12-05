@@ -1,13 +1,13 @@
 package ru.practicum.stats.service.hit.mapper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.practicum.stats.dto.HitCreateDto;
 import ru.practicum.stats.dto.HitDto;
 import ru.practicum.stats.service.hit.model.Hit;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class HitMapper {
-    private HitMapper() {
-    }
-
     public static Hit mapToHit(HitCreateDto hitDto) {
         return Hit.builder()
                 .uri(hitDto.getUri())

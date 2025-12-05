@@ -29,7 +29,7 @@ services:
       timeout: 5s
       retries: 10
 
-  stats-server:
+  stats-service:
     build: stats/stats-service
     image: stats-service
     container_name: stats-service
