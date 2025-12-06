@@ -66,6 +66,25 @@ public final class EventMapper {
     }
 
     public static void updateEventProperties(UpdateEventUserRequest updatedEvent, Event event, Category category) {
+        updateEventFromRequest(updatedEvent, event, category);
+        final UserEventAction stateAction = updatedEvent.getStateAction();
+        if (stateAction != null) {
+            event.setState(stateAction == UserEventAction.CANCEL_REVIEW ? EventState.CANCELED : EventState.PENDING);
+        }
+    }
+
+    public static void updateEventProperties(UpdateEventAdminRequest updatedEvent, Event event, Category category) {
+        updateEventFromRequest(updatedEvent, event, category);
+        final AdminEventAction stateAction = updatedEvent.getStateAction();
+        if (stateAction != null) {
+            event.setState(stateAction == AdminEventAction.REJECT_EVENT ? EventState.CANCELED : EventState.PUBLISHED);
+        }
+        if (stateAction == AdminEventAction.PUBLISH_EVENT) {
+            event.setPublishedOn(LocalDateTime.now());
+        }
+    }
+
+    private static void updateEventFromRequest(UpdateEventRequest updatedEvent, Event event, Category category) {
         if (updatedEvent.getAnnotation() != null) {
             event.setAnnotation(updatedEvent.getAnnotation());
         }
@@ -90,14 +109,10 @@ public final class EventMapper {
         if (updatedEvent.getRequestModeration() != null) {
             event.setRequestModeration(updatedEvent.getRequestModeration());
         }
-        final StateAction stateAction = updatedEvent.getStateAction();
-        if (stateAction != null) {
-            event.setState(stateAction == StateAction.CANCEL_REVIEW ? EventState.CANCELED : EventState.PENDING);
-        }
         if (updatedEvent.getTitle() != null) {
             event.setTitle(updatedEvent.getTitle());
         }
-        if (stateAction == null && !event.isRequestModeration()) {
+        if (!event.isRequestModeration()) {
             event.setPublishedOn(LocalDateTime.now());
         }
     }

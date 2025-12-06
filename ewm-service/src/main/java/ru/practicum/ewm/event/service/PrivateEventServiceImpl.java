@@ -17,7 +17,7 @@ import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.event.util.EventHelper;
-import ru.practicum.ewm.event.util.LocalDateTimeUtils;
+import ru.practicum.ewm.event.util.EventDateTimeUtils;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
@@ -50,8 +50,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public List<EventShortDto> findUserEvents(long userId, int from, int size) {
         return helper.buildShortDtoList(
                 eventRepository.findAllByInitiatorId(userId, PageRequest.of(from, size)).stream().toList(),
-                LocalDateTimeUtils.defaultStart(),
-                LocalDateTimeUtils.defaultEnd()
+                EventDateTimeUtils.defaultStart(),
+                EventDateTimeUtils.defaultEnd()
         );
     }
 
@@ -59,7 +59,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public EventFullDto findUserEvent(long userId, long eventId) {
         final Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
-        return helper.buildFullDto(event, LocalDateTimeUtils.defaultStart(), LocalDateTimeUtils.defaultEnd());
+        return helper.buildFullDto(event, EventDateTimeUtils.defaultStart(), EventDateTimeUtils.defaultEnd());
     }
 
     @Override
@@ -80,8 +80,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         ensureEventDateNotEarlierThanTwoHoursFromNow(event.getEventDate());
         return helper.buildFullDto(
                 eventRepository.save(event),
-                LocalDateTimeUtils.defaultStart(),
-                LocalDateTimeUtils.defaultEnd()
+                EventDateTimeUtils.defaultStart(),
+                EventDateTimeUtils.defaultEnd()
         );
     }
 

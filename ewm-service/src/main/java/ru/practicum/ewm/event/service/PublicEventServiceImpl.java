@@ -12,13 +12,13 @@ import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.EventSortOption;
+import ru.practicum.ewm.event.mapper.HitMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.event.util.EventHelper;
-import ru.practicum.ewm.event.util.LocalDateTimeUtils;
+import ru.practicum.ewm.event.util.EventDateTimeUtils;
 import ru.practicum.stats.client.StatsClient;
-import ru.practicum.stats.dto.HitCreateDto;
 import ru.practicum.stats.dto.HitDto;
 
 import java.time.LocalDateTime;
@@ -49,47 +49,30 @@ public class PublicEventServiceImpl implements PublicEventService {
             rangeStart = LocalDateTime.now().plusNanos(1);
         }
         if (rangeEnd == null) {
-            rangeEnd = LocalDateTimeUtils.defaultEnd();
+            rangeEnd = EventDateTimeUtils.defaultEnd();
         }
         if (rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
-        final HitCreateDto hit = buildCreateHit(request);
-        final HitDto ignored = statsClient.hit(hit);
+        HitDto ignored = statsClient.hit(HitMapper.buildCreateHit(request));
 
         final Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.ASC, "eventDate"));
-        final List<EventShortDto> events = new ArrayList<>(helper.buildShortDtoList(
-                eventRepository.findAllPublishedByCriteria(
-                        text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable
-                ).stream().toList(),
-                rangeStart,
-                rangeEnd
-        ));
-        events.forEach(e -> {
-            hit.setUri("/events/" + e.getId());
-            hit.setTimestamp(LocalDateTime.now());
-            statsClient.hit(hit);
-        });
+        final List<Event> events = eventRepository.findAllPublishedByCriteria(
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable
+        ).stream().toList();
+        final List<EventShortDto> result = new ArrayList<>(helper.buildShortDtoList(events, rangeStart, rangeEnd));
+        helper.sendHits(events, request);
         if (sort == EventSortOption.VIEWS) {
-            events.sort((e1, e2) -> (int) (e2.getViews() - e1.getViews()));
+            result.sort((e1, e2) -> (int) (e2.getViews() - e1.getViews()));
         }
-        return events;
+        return result;
     }
 
     @Override
     public EventFullDto findPublishedEvent(long id, HttpServletRequest request) {
+        HitDto ignored = statsClient.hit(HitMapper.buildCreateHit(request));
         final Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " not found or not published"));
-        final HitDto ignored = statsClient.hit(buildCreateHit(request));
-        return helper.buildFullDto(event, LocalDateTimeUtils.defaultStart(), LocalDateTimeUtils.defaultEnd());
-    }
-
-    private static HitCreateDto buildCreateHit(HttpServletRequest request) {
-        return HitCreateDto.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
+        return helper.buildFullDto(event, EventDateTimeUtils.defaultStart(), EventDateTimeUtils.defaultEnd());
     }
 }

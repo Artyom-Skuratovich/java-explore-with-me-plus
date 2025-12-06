@@ -1,21 +1,31 @@
 package ru.practicum.ewm.admin.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.service.AdminCategoryService;
+import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
+import ru.practicum.ewm.event.model.EventState;
+import ru.practicum.ewm.event.service.AdminEventService;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.service.AdminUserService;
+import ru.practicum.stats.common.Constants;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+
+import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
 
 @RestController
 @RequestMapping("/admin")
@@ -24,6 +34,7 @@ import java.util.Set;
 public class AdminController {
     private final AdminCategoryService categoryService;
     private final AdminUserService userService;
+    private final AdminEventService eventService;
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -64,5 +75,28 @@ public class AdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable long id) {
         userService.delete(id);
+    }
+
+    @GetMapping("/events")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventFullDto> findAllEventsByCriteria(
+            @RequestParam(required = false) Set<Long> users,
+            @RequestParam(required = false) Set<EventState> states,
+            @RequestParam(required = false) Set<Long> categories,
+            @DateTimeFormat(pattern = DATE_TIME_FORMAT) @RequestParam(required = false) LocalDateTime rangeStart,
+            @DateTimeFormat(pattern = DATE_TIME_FORMAT) @RequestParam(required = false) LocalDateTime rangeEnd,
+            @PositiveOrZero @RequestParam(required = false, defaultValue = "0") int from,
+            @Positive @RequestParam(required = false, defaultValue = "10") int size,
+            HttpServletRequest request) {
+        return eventService.findAllByCriteria(users, states, categories, rangeStart, rangeEnd, from, size, request);
+    }
+
+    @PatchMapping("/events/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public EventFullDto updateEvent(
+            @PathVariable long id,
+            @Valid @RequestBody UpdateEventAdminRequest updatedEvent,
+            HttpServletRequest request) {
+        return eventService.update(id, updatedEvent, request);
     }
 }

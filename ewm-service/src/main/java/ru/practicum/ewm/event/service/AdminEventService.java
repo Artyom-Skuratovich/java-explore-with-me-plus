@@ -1,5 +1,6 @@
 package ru.practicum.ewm.event.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.model.EventState;
@@ -15,8 +16,13 @@ public interface AdminEventService {
             LocalDateTime rangeStart,
             LocalDateTime rangeEnd,
             int from,
-            int size
+            int size,
+            HttpServletRequest request
     );
 
-    EventFullDto update(long id, UpdateEventAdminRequest updatedEvent);
+    EventFullDto update(
+            long id,
+            UpdateEventAdminRequest updatedEvent,
+            HttpServletRequest request
+    );
 }

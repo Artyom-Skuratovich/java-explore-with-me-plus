@@ -1,4 +1,12 @@
 package ru.practicum.ewm.event.dto;
 
-public class UpdateEventAdminRequest {
+import lombok.*;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateEventAdminRequest extends UpdateEventRequest {
+    private AdminEventAction stateAction;
 }

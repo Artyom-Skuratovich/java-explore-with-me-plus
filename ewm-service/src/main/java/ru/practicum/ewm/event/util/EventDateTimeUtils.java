@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class LocalDateTimeUtils {
+public final class EventDateTimeUtils {
     private static final int YEARS_OFFSET = 100;
 
     public static LocalDateTime defaultStart() {
