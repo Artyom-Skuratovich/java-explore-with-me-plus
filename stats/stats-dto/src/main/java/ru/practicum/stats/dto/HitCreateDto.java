@@ -11,6 +11,8 @@ import ru.practicum.stats.common.Constants;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,7 +27,7 @@ public class HitCreateDto {
     @NotBlank(message = "IP Адрес, откуда происходит вызов, должен быть указан.")
     private String ip;
 
-    @JsonFormat(pattern = Constants.DATE_TIME_FORMAT)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_TIME_FORMAT)
     @NotNull(message = "Время вызова должно быть указано.")
     private LocalDateTime timestamp;
 }
