@@ -4,8 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.category.model.Category;
-import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.NewEventDto;
+import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.user.mapper.UserMapper;
@@ -33,6 +32,18 @@ public final class EventMapper {
                 .build();
     }
 
+    public static EventShortDto toShortDto(Event event) {
+        return EventShortDto.builder()
+                .annotation(event.getAnnotation())
+                .category(CategoryMapper.toDto(event.getCategory()))
+                .eventDate(event.getEventDate())
+                .id(event.getId())
+                .initiator(UserMapper.toShortDto(event.getInitiator()))
+                .paid(event.isPaid())
+                .title(event.getTitle())
+                .build();
+    }
+
     public static EventFullDto toFullDto(Event event) {
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
@@ -52,5 +63,42 @@ public final class EventMapper {
                 .title(event.getTitle())
                 .views(0)
                 .build();
+    }
+
+    public static void updateEventProperties(UpdateEventUserRequest updatedEvent, Event event, Category category) {
+        if (updatedEvent.getAnnotation() != null) {
+            event.setAnnotation(updatedEvent.getAnnotation());
+        }
+        if (category != null) {
+            event.setCategory(category);
+        }
+        if (updatedEvent.getDescription() != null) {
+            event.setDescription(updatedEvent.getDescription());
+        }
+        if (updatedEvent.getEventDate() != null) {
+            event.setEventDate(updatedEvent.getEventDate());
+        }
+        if (updatedEvent.getLocation() != null) {
+            event.setLocation(updatedEvent.getLocation());
+        }
+        if (updatedEvent.getPaid() != null) {
+            event.setPaid(updatedEvent.getPaid());
+        }
+        if (updatedEvent.getParticipantLimit() != null) {
+            event.setParticipantLimit(updatedEvent.getParticipantLimit());
+        }
+        if (updatedEvent.getRequestModeration() != null) {
+            event.setRequestModeration(updatedEvent.getRequestModeration());
+        }
+        final StateAction stateAction = updatedEvent.getStateAction();
+        if (stateAction != null) {
+            event.setState(stateAction == StateAction.CANCEL_REVIEW ? EventState.CANCELED : EventState.PENDING);
+        }
+        if (updatedEvent.getTitle() != null) {
+            event.setTitle(updatedEvent.getTitle());
+        }
+        if (stateAction == null && !event.isRequestModeration()) {
+            event.setPublishedOn(LocalDateTime.now());
+        }
     }
 }

@@ -43,6 +43,7 @@ public final class StatsClient {
                                      Iterable<String> uris,
                                      Boolean unique) {
         final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                .path("/stats")
                 .queryParam("start", start.format(FORMATTER))
                 .queryParam("end", end.format(FORMATTER))
                 .queryParam("unique", unique);
