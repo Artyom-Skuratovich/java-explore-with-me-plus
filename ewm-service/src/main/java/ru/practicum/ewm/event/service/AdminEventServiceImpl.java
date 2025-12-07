@@ -14,14 +14,13 @@ import ru.practicum.ewm.event.dto.AdminEventAction;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.mapper.EventMapper;
-import ru.practicum.ewm.event.mapper.HitMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
-import ru.practicum.ewm.event.util.EventHelper;
+import ru.practicum.ewm.event.util.EventDtoService;
 import ru.practicum.ewm.event.util.EventDateTimeUtils;
-import ru.practicum.stats.client.StatsClient;
-import ru.practicum.stats.dto.HitDto;
+import ru.practicum.ewm.event.util.EventStatsService;
+import ru.practicum.ewm.event.util.UrlUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,8 +31,8 @@ import java.util.List;
 public class AdminEventServiceImpl implements AdminEventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
-    private final StatsClient statsClient;
-    private final EventHelper helper;
+    private final EventDtoService dtoService;
+    private final EventStatsService statsService;
 
     @Override
     public List<EventFullDto> findAllByCriteria(
@@ -54,18 +53,22 @@ public class AdminEventServiceImpl implements AdminEventService {
         if (rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
-        HitDto ignored = statsClient.hit(HitMapper.buildCreateHit(request));
+
         final List<Event> events = eventRepository.findAllByCriteria(
                 users, states, categories, rangeStart, rangeEnd, PageRequest.of(from, size)
         ).stream().toList();
-        helper.sendHits(events, request);
-        return helper.buildFullDtoList(events, rangeStart, rangeEnd);
+
+        final List<EventFullDto> result = dtoService.buildFullDtoList(events, rangeStart, rangeEnd, request.getRequestURI());
+
+        statsService.sendHit(request);
+        statsService.sendHits(events, request);
+
+        return result;
     }
 
     @Override
     @Transactional
     public EventFullDto update(long id, UpdateEventAdminRequest updatedEvent, HttpServletRequest request) {
-        HitDto ignored = statsClient.hit(HitMapper.buildCreateHit(request));
         final Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
         final Long categoryId = updatedEvent.getCategory();
@@ -85,9 +88,16 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         EventMapper.updateEventProperties(updatedEvent, event, category);
         ensureStartDateIsAtLeastAnHourAfterPublication(event.getEventDate(), event.getPublishedOn());
-        return helper.buildFullDto(
-                eventRepository.save(event), EventDateTimeUtils.defaultStart(), EventDateTimeUtils.defaultEnd()
+
+        final EventFullDto dto = dtoService.buildFullDto(
+                eventRepository.save(event),
+                EventDateTimeUtils.defaultStart(),
+                EventDateTimeUtils.defaultEnd(),
+                UrlUtils.removeTrailingNumberSegment(request.getRequestURI())
         );
+        statsService.sendHit(request);
+
+        return dto;
     }
 
     public static void ensureStartDateIsAtLeastAnHourAfterPublication(

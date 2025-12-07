@@ -16,7 +16,7 @@ import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
-import ru.practicum.ewm.event.util.EventHelper;
+import ru.practicum.ewm.event.util.EventDtoService;
 import ru.practicum.ewm.event.util.EventDateTimeUtils;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
@@ -31,7 +31,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    private final EventHelper helper;
+    private final EventDtoService dtoService;
 
     @Override
     @Transactional
@@ -48,10 +48,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     @Override
     public List<EventShortDto> findUserEvents(long userId, int from, int size) {
-        return helper.buildShortDtoList(
+        return dtoService.buildShortDtoList(
                 eventRepository.findAllByInitiatorId(userId, PageRequest.of(from, size)).stream().toList(),
                 EventDateTimeUtils.defaultStart(),
-                EventDateTimeUtils.defaultEnd()
+                EventDateTimeUtils.defaultEnd(),
+                "/events"
         );
     }
 
@@ -59,7 +60,12 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public EventFullDto findUserEvent(long userId, long eventId) {
         final Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
-        return helper.buildFullDto(event, EventDateTimeUtils.defaultStart(), EventDateTimeUtils.defaultEnd());
+        return dtoService.buildFullDto(
+                event,
+                EventDateTimeUtils.defaultStart(),
+                EventDateTimeUtils.defaultEnd(),
+                "/events"
+        );
     }
 
     @Override
@@ -78,10 +84,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         }
         EventMapper.updateEventProperties(updatedEvent, event, category);
         ensureEventDateNotEarlierThanTwoHoursFromNow(event.getEventDate());
-        return helper.buildFullDto(
+        return dtoService.buildFullDto(
                 eventRepository.save(event),
                 EventDateTimeUtils.defaultStart(),
-                EventDateTimeUtils.defaultEnd()
+                EventDateTimeUtils.defaultEnd(),
+                "/events"
         );
     }
 

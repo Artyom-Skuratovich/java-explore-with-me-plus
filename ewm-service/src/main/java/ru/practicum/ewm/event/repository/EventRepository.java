@@ -10,6 +10,7 @@ import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
@@ -28,8 +29,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "JOIN FETCH e.category " +
             "JOIN FETCH e.initiator " +
             "WHERE e.state = 'PUBLISHED' " +
-            "AND ((:text) IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) " +
-            "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%'))) " +
+            "AND ((:text) IS NULL OR LOWER(e.annotation) LIKE CONCAT('%', LOWER(:text), '%') " +
+            "OR LOWER(e.description) LIKE CONCAT('%', LOWER(:text), '%')) " +
             "AND ((:categories) IS NULL OR e.category.id IN :categories) " +
             "AND ((:paid) IS NULL OR e.paid = :paid) " +
             "AND e.eventDate BETWEEN :start AND :end " +
