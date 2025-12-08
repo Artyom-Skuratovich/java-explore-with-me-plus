@@ -20,6 +20,7 @@ import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -138,7 +139,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
         Request request = new Request();
         request.setEvent(event);
         request.setRequester(requestor);
-        request.setCreated(LocalDateTime.now());
+        request.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
         if (event.isRequestModeration()) {
             if (event.getParticipantLimit() == 0) {
                 request.setStatus(RequestStatus.CONFIRMED);
