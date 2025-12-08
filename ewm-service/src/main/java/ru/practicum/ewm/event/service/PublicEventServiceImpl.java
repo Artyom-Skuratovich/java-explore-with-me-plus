@@ -54,6 +54,8 @@ public class PublicEventServiceImpl implements PublicEventService {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
 
+        statsService.sendHit(request);
+
         final Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.ASC, "eventDate"));
         final List<Event> events = eventRepository.findAllPublishedByCriteria(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable
@@ -62,13 +64,11 @@ public class PublicEventServiceImpl implements PublicEventService {
                 dtoService.buildShortDtoList(events, rangeStart, rangeEnd, request.getRequestURI())
         );
 
-        statsService.sendHit(request);
         statsService.sendHits(events, request);
 
         if (sort == EventSortOption.VIEWS) {
             result.sort((e1, e2) -> (int) (e2.getViews() - e1.getViews()));
         }
-
         return result;
     }
 
@@ -76,6 +76,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     public EventFullDto findPublishedEvent(long id, HttpServletRequest request) {
         final Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " not found or not published"));
+
         final EventFullDto dto = dtoService.buildFullDto(
                 event,
                 EventDateTimeUtils.defaultStart(),

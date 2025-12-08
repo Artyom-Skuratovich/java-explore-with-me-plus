@@ -54,16 +54,15 @@ public class AdminEventServiceImpl implements AdminEventService {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
 
+        statsService.sendHit(request);
+
         final List<Event> events = eventRepository.findAllByCriteria(
                 users, states, categories, rangeStart, rangeEnd, PageRequest.of(from, size)
         ).stream().toList();
 
-        final List<EventFullDto> result = dtoService.buildFullDtoList(events, rangeStart, rangeEnd, request.getRequestURI());
-
-        statsService.sendHit(request);
         statsService.sendHits(events, request);
 
-        return result;
+        return dtoService.buildFullDtoList(events, rangeStart, rangeEnd, request.getRequestURI());
     }
 
     @Override
@@ -80,7 +79,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         }
 
         final AdminEventAction stateAction = updatedEvent.getStateAction();
-        if (stateAction == AdminEventAction.PUBLISH_EVENT && event.getState() == EventState.CANCELED) {
+        if (stateAction == AdminEventAction.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
             throw new ConflictException("Cannot publish the event because it's not in the right state: PENDING");
         } else if (stateAction == AdminEventAction.REJECT_EVENT && event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Cannot reject the event because it's already been published");
@@ -95,6 +94,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 EventDateTimeUtils.defaultEnd(),
                 UrlUtils.removeTrailingNumberSegment(request.getRequestURI())
         );
+
         statsService.sendHit(request);
 
         return dto;

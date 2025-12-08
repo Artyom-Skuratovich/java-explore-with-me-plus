@@ -21,6 +21,9 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
     @Override
     public CategoryDto create(NewCategoryDto newCategory) {
+        if (categoryRepository.existsByName(newCategory.getName())) {
+            throw new ConflictException("The category name already exists");
+        }
         final Category saved = categoryRepository.save(CategoryMapper.from(newCategory));
         return CategoryMapper.toDto(saved);
     }
