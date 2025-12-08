@@ -1,6 +1,7 @@
 package ru.practicum.ewm.user.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class UserController {
     public List<EventShortDto> findUserEvents(
             @PathVariable long userId,
             @PositiveOrZero @RequestParam(required = false, defaultValue = "0") int from,
-            @Positive @RequestParam(required = false, defaultValue = "0") int size) {
+            @Positive @RequestParam(required = false, defaultValue = "10") int size) {
         return eventService.findUserEvents(userId, from, size);
     }
 
@@ -62,7 +63,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/events/{eventId}/requests")
-    public ResponseEntity<ParticipationRequestDto> getRequestUserByEventId(@PathVariable(name = "userId") Long userId,
+    public ResponseEntity<List<ParticipationRequestDto>> getRequestUserByEventId(@PathVariable(name = "userId") Long userId,
                                                                            @PathVariable(name = "eventId") Long eventId) {
         return ResponseEntity.ok(requestService.getRequestUserByEventId(userId, eventId));
     }
@@ -81,8 +82,10 @@ public class UserController {
 
     @PostMapping("/{userId}/requests")
     public ResponseEntity<ParticipationRequestDto> createRequestToEventId(@PathVariable(name = "userId") Long userId,
-                                                                          @RequestParam(name = "eventId") Long eventId) {
-        return ResponseEntity.ok(requestService.createRequestByEventIdFromUserId(userId, eventId));
+                                                                          @RequestParam(name = "eventId")
+                                                                          @Min(value = 1, message = "eventId должен быть больше или равен 1") Long eventId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(requestService.createRequestByEventIdFromUserId(userId, eventId));
     }
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")

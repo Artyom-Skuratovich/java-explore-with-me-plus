@@ -79,12 +79,19 @@ public class AdminEventServiceImpl implements AdminEventService {
         }
 
         final AdminEventAction stateAction = updatedEvent.getStateAction();
-        if (stateAction == AdminEventAction.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
+        /*if (stateAction == AdminEventAction.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
             throw new ConflictException("Cannot publish the event because it's not in the right state: PENDING");
         } else if (stateAction == AdminEventAction.REJECT_EVENT && event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Cannot reject the event because it's already been published");
+        }*/
+
+        if (event.getState().equals(EventState.CANCELED)) {
+            throw new ConflictException("Событие уже отменено");
         }
 
+        if (event.getState().equals(EventState.PUBLISHED)) {
+            throw new ConflictException("Событие уже опубликовано");
+        }
         EventMapper.updateEventProperties(updatedEvent, event, category);
         ensureStartDateIsAtLeastAnHourAfterPublication(event.getEventDate(), event.getPublishedOn());
 

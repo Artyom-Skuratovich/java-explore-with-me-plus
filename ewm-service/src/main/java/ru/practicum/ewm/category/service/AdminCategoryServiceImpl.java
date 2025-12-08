@@ -43,9 +43,10 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
     public CategoryDto update(long id, NewCategoryDto updatedCategory) {
         final Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + id + " was not found"));
-        if (categoryRepository.existsByName(updatedCategory.getName())) {
-            throw new ConflictException("The category name already exists");
-        }
+        if (updatedCategory.getName() != null && !updatedCategory.getName().equals(category.getName()))
+            if (categoryRepository.existsByName(updatedCategory.getName())) {
+                throw new ConflictException("The category name already exists");
+            }
         category.setName(updatedCategory.getName());
         final Category saved = categoryRepository.save(category);
         return CategoryMapper.toDto(saved);

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
@@ -33,6 +34,14 @@ public class AdminUserServiceImpl implements AdminUserService {
     public UserDto create(NewUserRequest newUser) {
         if (userRepository.existsByEmail(newUser.getEmail())) {
             throw new ConflictException("A user with this email already exists");
+        }
+        String localpart = newUser.getEmail().split("@")[0];
+        if (localpart.length() > 64) {
+            throw new BadRequestException("Локальная часть почты не должна иметь больше 64 символов");
+        }
+        String domain = newUser.getEmail().split("@")[1].split("\\.")[0];
+        if (domain.length() > 63) {
+            throw new BadRequestException("Домен почты не должен иметь больше 63 символов");
         }
         final User saved = userRepository.save(UserMapper.from(newUser));
         return UserMapper.toDto(saved);

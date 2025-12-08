@@ -19,11 +19,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     Optional<Request> findByEventIdAndRequesterId(Long eventId, Long requesterId);
 
+    Optional<List<Request>> findByEventId(Long eventId);
+
     Long countByEventIdAndStatus(Long eventId, RequestStatus status);
 
     Long countByEventIdAndStatusNot(Long eventId, RequestStatus status);
-
-    List<Request> findByEventIdAndStatus(Long eventId, RequestStatus status);
 
     @Modifying
     @Query("UPDATE Request r " +

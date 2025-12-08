@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 @Data
 @Builder
@@ -12,5 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NewCategoryDto {
     @NotBlank(message = "The category name must not be empty")
+    @Length(max = 50, message = "Имя категории должно иметь не больше 50 символов.")
     private String name;
 }

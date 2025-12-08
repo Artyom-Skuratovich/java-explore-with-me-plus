@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
+import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.ewm.event.dto.EventFullDto;
@@ -94,7 +95,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     private static void ensureEventDateNotEarlierThanTwoHoursFromNow(LocalDateTime eventDate) {
         if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("The event start date must not be earlier than two hours from now");
+            throw new BadRequestException("The event start date must not be earlier than two hours from now");
         }
     }
 }
