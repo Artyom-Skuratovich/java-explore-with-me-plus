@@ -84,6 +84,10 @@ public class AdminEventServiceImpl implements AdminEventService {
         } else if (stateAction == AdminEventAction.REJECT_EVENT && event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Cannot reject the event because it's already been published");
         }*/
+        if (updatedEvent.getEventDate() != null)
+            if (updatedEvent.getEventDate().isBefore(LocalDateTime.now())) {
+                throw new BadRequestException("Ошибка времени");
+            }
 
         if (event.getState().equals(EventState.CANCELED)) {
             throw new ConflictException("Событие уже отменено");
