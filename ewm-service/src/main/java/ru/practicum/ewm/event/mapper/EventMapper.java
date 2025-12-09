@@ -19,7 +19,7 @@ public final class EventMapper {
                 .category(category)
                 .initiator(initiator)
                 .location(newEvent.getLocation())
-                .state(newEvent.isRequestModeration() ? EventState.PENDING : EventState.PUBLISHED)
+                .state(EventState.PENDING)
                 .description(newEvent.getDescription())
                 .annotation(newEvent.getAnnotation())
                 .title(newEvent.getTitle())

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import ru.practicum.ewm.event.model.Location;
 
 import java.time.LocalDateTime;
@@ -13,8 +14,10 @@ import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
 @Data
 @NoArgsConstructor
 public abstract class UpdateEventRequest {
+    @Length(min = 20, max = 2000)
     private String annotation;
     private Long category;
+    @Length(min = 20, max = 7000)
     private String description;
 
     @JsonFormat(pattern = DATE_TIME_FORMAT)
@@ -27,5 +30,7 @@ public abstract class UpdateEventRequest {
     private Integer participantLimit;
 
     private Boolean requestModeration;
+
+    @Length(min = 3, max = 120)
     private String title;
 }

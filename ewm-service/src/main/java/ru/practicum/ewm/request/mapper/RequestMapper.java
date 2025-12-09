@@ -2,8 +2,13 @@ package ru.practicum.ewm.request.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.request.model.RequestStatus;
+import ru.practicum.ewm.user.model.User;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestMapper {
@@ -14,6 +19,15 @@ public class RequestMapper {
                 .created(request.getCreated())
                 .requester(request.getRequester().getId())
                 .status(request.getStatus())
+                .build();
+    }
+
+    public static Request toRequest(ParticipationRequestDto participationRequestDto, User requestor, Event event) {
+        return Request.builder()
+                .requester(requestor)
+                .status(RequestStatus.PENDING)
+                .event(event)
+                .created(LocalDateTime.now())
                 .build();
     }
 }
