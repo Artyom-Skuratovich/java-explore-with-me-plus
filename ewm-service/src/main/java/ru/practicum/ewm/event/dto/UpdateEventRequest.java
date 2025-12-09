@@ -1,6 +1,7 @@
 package ru.practicum.ewm.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public abstract class UpdateEventRequest {
     private String description;
 
     @JsonFormat(pattern = DATE_TIME_FORMAT)
+    @FutureOrPresent
     private LocalDateTime eventDate;
 
     private Location location;

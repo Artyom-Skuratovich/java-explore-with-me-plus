@@ -33,7 +33,7 @@ public class EventStatsService {
         final Set<String> uris = events.stream()
                 .map(e -> baseUri + "/" + e.getId())
                 .collect(Collectors.toSet());
-        final List<ViewStats> stats = statsClient.findStats(start, end, uris, false);
+        final List<ViewStats> stats = statsClient.findStats(start, end, uris, true);
 
         final HashMap<Long, Long> eventViews = new HashMap<>();
         for (ViewStats s : stats) {

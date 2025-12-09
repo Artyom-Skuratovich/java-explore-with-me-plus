@@ -9,6 +9,7 @@ import ru.practicum.ewm.request.model.RequestStatus;
 import ru.practicum.ewm.user.model.User;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestMapper {
@@ -22,12 +23,12 @@ public class RequestMapper {
                 .build();
     }
 
-    public static Request toRequest(ParticipationRequestDto participationRequestDto, User requestor, Event event) {
+    public static Request toRequest(User requestor, Event event) {
         return Request.builder()
                 .requester(requestor)
                 .status(RequestStatus.PENDING)
                 .event(event)
-                .created(LocalDateTime.now())
+                .created(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
                 .build();
     }
 }

@@ -14,26 +14,26 @@ import java.util.Optional;
 public interface RequestRepository extends JpaRepository<Request, Long> {
     long countByEventIdAndStatus(long eventId, RequestStatus status);
 
+    long countByEventIdAndStatusNot(long eventId, RequestStatus status);
+
     @EntityGraph(attributePaths = {"event", "requester"})
     Optional<Request> findByIdAndRequesterId(long id, long requesterId);
 
-    Optional<Request> findByEventIdAndRequesterId(Long eventId, Long requesterId);
-
-    Optional<List<Request>> findByEventId(Long eventId);
-
-    Long countByEventIdAndStatus(Long eventId, RequestStatus status);
-
-    Long countByEventIdAndStatusNot(Long eventId, RequestStatus status);
+    boolean existsByEventIdAndRequesterId(long eventId, long requesterId);
 
     @Modifying
     @Query("UPDATE Request r " +
             "SET r.status = :newStatus " +
             "WHERE r.status = :oldStatus AND r.event.id = :eventId")
-    void updateStatus(@Param("oldStatus") RequestStatus oldStatus,
-                      @Param("newStatus") RequestStatus newStatus,
-                      @Param("eventId") Long eventId);
+    void updateStatusesByEventAndCurrentStatus(
+            @Param("oldStatus") RequestStatus oldStatus,
+            @Param("newStatus") RequestStatus newStatus,
+            @Param("eventId") long eventId
+    );
 
-    Optional<List<Request>> findByRequesterId(Long requesterId);
+    @EntityGraph(attributePaths = {"event", "requester"})
+    List<Request> findAllByRequesterId(long requesterId);
 
-    Optional<Request> findByIdAndRequesterId(Long id, Long requesterId);
+    @EntityGraph(attributePaths = {"event", "requester"})
+    List<Request> findAllByRequesterIdAndEventId(long requesterId, long eventId);
 }

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
@@ -15,6 +14,7 @@ import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.event.service.PrivateEventService;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.service.PrivateRequestService;
 
@@ -63,34 +63,41 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/events/{eventId}/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> getRequestUserByEventId(@PathVariable(name = "userId") Long userId,
-                                                                           @PathVariable(name = "eventId") Long eventId) {
-        return ResponseEntity.ok(requestService.getRequestUserByEventId(userId, eventId));
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationRequestDto> findEventRequestsByUser(
+            @PathVariable long userId,
+            @PathVariable long eventId) {
+        return requestService.findEventRequestsByUser(userId, eventId);
     }
 
     @PatchMapping("/{userId}/events/{eventId}/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> updateRequestStatus(@Valid @RequestBody EventRequestStatusUpdateRequest updateRequest,
-                                                                             @PathVariable(name = "userId") Long userId,
-                                                                             @PathVariable(name = "eventId") Long eventId) {
-        return ResponseEntity.ok(requestService.updateEventRequestStatus(userId, eventId, updateRequest));
+    @ResponseStatus(HttpStatus.OK)
+    public EventRequestStatusUpdateResult updateRequestStatus(
+            @Valid @RequestBody EventRequestStatusUpdateRequest updateRequest,
+            @PathVariable long userId,
+            @PathVariable long eventId) {
+        return requestService.updateRequestStatus(userId, eventId, updateRequest);
     }
 
     @GetMapping("/{userId}/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> getRequestByUserId(@PathVariable(name = "userId") Long userId) {
-        return ResponseEntity.ok(requestService.getRequestByUserId(userId));
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationRequestDto> findUserRequests(@PathVariable long userId) {
+        return requestService.findUserRequests(userId);
     }
 
     @PostMapping("/{userId}/requests")
-    public ResponseEntity<ParticipationRequestDto> createRequestToEventId(@PathVariable(name = "userId") Long userId,
-                                                                          @RequestParam(name = "eventId")
-                                                                          @Min(value = 1, message = "eventId должен быть больше или равен 1") Long eventId) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(requestService.createRequestByEventIdFromUserId(userId, eventId));
+    @ResponseStatus(HttpStatus.CREATED)
+    public ParticipationRequestDto createRequest(
+            @PathVariable long userId,
+            @RequestParam @Min(value = 1, message = "The eventId must be bigger than or equal to 1") long eventId) {
+        return requestService.create(userId, eventId);
     }
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")
-    public ResponseEntity<ParticipationRequestDto> cancelRequestByIdAndUserId(@PathVariable(name = "userId") Long userId,
-                                                                              @PathVariable(name = "requestId") Long requestId) {
-        return ResponseEntity.ok(requestService.cancelRequestByIdAndUserId(userId, requestId));
+    @ResponseStatus(HttpStatus.OK)
+    public ParticipationRequestDto cancelRequest(
+            @PathVariable long userId,
+            @PathVariable long requestId) {
+        return requestService.cancel(userId, requestId);
     }
 }

@@ -21,14 +21,14 @@ import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
 @AllArgsConstructor
 public class NewEventDto {
     @NotBlank
-    @Length(min = 20, max = 2000, message = "Примечание должно иметь не меньше 20 и не больше 2000 символов.")
+    @Length(min = 20, max = 2000)
     private String annotation;
 
     @NotNull
     private Long category;
 
     @NotBlank
-    @Length(min = 20, max = 7000, message = "Описание должно иметь не меньше 20 и не больше 7000 символов.")
+    @Length(min = 20, max = 7000)
     private String description;
 
     @JsonFormat(pattern = DATE_TIME_FORMAT)
@@ -40,11 +40,11 @@ public class NewEventDto {
 
     private Boolean paid = false;
 
-    @PositiveOrZero(message = "Число участников не может быть отрицательным значением.")
+    @PositiveOrZero
     private int participantLimit = 0;
     private boolean requestModeration = true;
 
     @NotBlank
-    @Length(min = 3, max = 120, message = "Название события должно иметь минимум 3 и максимум 120 символов.")
+    @Length(min = 3, max = 120)
     private String title;
 }

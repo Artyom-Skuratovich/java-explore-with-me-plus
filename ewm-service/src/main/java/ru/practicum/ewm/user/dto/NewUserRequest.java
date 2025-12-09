@@ -15,10 +15,10 @@ import org.hibernate.validator.constraints.Length;
 public class NewUserRequest {
     @NotBlank
     @Email
-    @Length(min = 6, max = 254, message = "Длина электронной почты должна иметь минимум 6 и максимум 64 символа")
+    @Length(min = 6, max = 254, message = "The email address must be between 6 and 64 characters long")
     private String email;
 
     @NotBlank
-    @Length(min = 2, max = 250, message = "Длина имени должна иметь минимум 2 и максимум 250 символов")
+    @Length(min = 2, max = 250, message = "The name must be between 2 and 250 characters long")
     private String name;
 }

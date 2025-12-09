@@ -35,13 +35,14 @@ public class AdminUserServiceImpl implements AdminUserService {
         if (userRepository.existsByEmail(newUser.getEmail())) {
             throw new ConflictException("A user with this email already exists");
         }
-        String localpart = newUser.getEmail().split("@")[0];
-        if (localpart.length() > 64) {
-            throw new BadRequestException("Локальная часть почты не должна иметь больше 64 символов");
+        final String[] emailParts = newUser.getEmail().split("@");
+        final String localPart = emailParts[0];
+        if (localPart.length() > 64) {
+            throw new BadRequestException("The local part of the email address must not exceed 64 characters");
         }
-        String domain = newUser.getEmail().split("@")[1].split("\\.")[0];
+        final String domain = emailParts[1].split("\\.")[0];
         if (domain.length() > 63) {
-            throw new BadRequestException("Домен почты не должен иметь больше 63 символов");
+            throw new BadRequestException("The email domain must not exceed 63 characters");
         }
         final User saved = userRepository.save(UserMapper.from(newUser));
         return UserMapper.toDto(saved);

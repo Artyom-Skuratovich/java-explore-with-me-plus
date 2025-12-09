@@ -10,7 +10,6 @@ import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
-import ru.practicum.ewm.event.dto.AdminEventAction;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -78,24 +77,20 @@ public class AdminEventServiceImpl implements AdminEventService {
                     .orElseThrow(() -> new NotFoundException("Category with id=" + categoryId + " was not found"));
         }
 
-        final AdminEventAction stateAction = updatedEvent.getStateAction();
         /*if (stateAction == AdminEventAction.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
             throw new ConflictException("Cannot publish the event because it's not in the right state: PENDING");
         } else if (stateAction == AdminEventAction.REJECT_EVENT && event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Cannot reject the event because it's already been published");
         }*/
-        if (updatedEvent.getEventDate() != null)
-            if (updatedEvent.getEventDate().isBefore(LocalDateTime.now())) {
-                throw new BadRequestException("Ошибка времени");
-            }
 
-        if (event.getState().equals(EventState.CANCELED)) {
-            throw new ConflictException("Событие уже отменено");
+        if (event.getState() == EventState.CANCELED) {
+            throw new ConflictException("The event has already been canceled");
         }
 
         if (event.getState().equals(EventState.PUBLISHED)) {
-            throw new ConflictException("Событие уже опубликовано");
+            throw new ConflictException("The event has already been published");
         }
+
         EventMapper.updateEventProperties(updatedEvent, event, category);
         ensureStartDateIsAtLeastAnHourAfterPublication(event.getEventDate(), event.getPublishedOn());
 
