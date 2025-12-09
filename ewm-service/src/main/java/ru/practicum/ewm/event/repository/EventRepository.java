@@ -49,9 +49,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event e " +
             "JOIN FETCH e.category " +
             "JOIN FETCH e.initiator " +
-            "WHERE ((:users) IS NULL OR e.initiator.id IN :users) " +
-            "AND ((:states) IS NULL OR e.state IN :states) " +
-            "AND ((:categories) IS NULL OR e.category.id IN :categories) " +
+            "WHERE (:users IS NULL OR e.initiator.id IN :users) " +
+            "AND (:states IS NULL OR e.state IN :states) " +
+            "AND (:categories IS NULL OR e.category.id IN :categories) " +
             "AND e.eventDate BETWEEN :start AND :end")
     Page<Event> findAllByCriteria(
             @Param("users") Iterable<Long> users,

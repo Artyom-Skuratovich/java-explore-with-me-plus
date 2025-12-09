@@ -19,6 +19,7 @@ import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -71,7 +72,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
         final Request request = requestRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
 
-        request.setStatus(RequestStatus.REJECTED);
+        request.setStatus(RequestStatus.CANCELED);
         return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
 
@@ -88,7 +89,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
 
     @Override
     public List<ParticipationRequestDto> findEventRequestsByUser(long userId, long eventId) {
-        return requestRepository.findAllByRequesterIdAndEventId(userId, eventId)
+        return requestRepository.findAllByEventIdAndEventInitiatorId(eventId, userId)
                 .stream()
                 .map(RequestMapper::toParticipationRequestDto)
                 .toList();
@@ -108,7 +109,10 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
             throw new ConflictException("The max number of participants for this event has been reached");
         }
 
-        final EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult();
+        final EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
+                .rejectedRequests(new ArrayList<>())
+                .confirmedRequests(new ArrayList<>())
+                .build();
         for (Long id : updatedRequest.getRequestIds()) {
             Request request = requestRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException("Request with id=" + id + " was not found"));

@@ -35,5 +35,5 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findAllByRequesterId(long requesterId);
 
     @EntityGraph(attributePaths = {"event", "requester"})
-    List<Request> findAllByRequesterIdAndEventId(long requesterId, long eventId);
+    List<Request> findAllByEventIdAndEventInitiatorId(long eventId, long initiatorId);
 }

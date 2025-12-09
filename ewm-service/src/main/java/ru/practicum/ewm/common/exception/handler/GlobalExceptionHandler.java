@@ -5,6 +5,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
 
@@ -19,24 +20,17 @@ public final class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        final ApiError error = ApiError.builder()
-                .status("BAD_REQUEST")
-                .reason("Incorrectly made request")
-                .message(e.getMessage())
-                .timestamp(getCurrentTimestampAsString())
-                .build();
-        return ResponseEntity.status(400).body(error);
+        return buildBadRequest(e);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        final ApiError error = ApiError.builder()
-                .status("BAD_REQUEST")
-                .reason("Incorrectly made request")
-                .message(e.getMessage())
-                .timestamp(getCurrentTimestampAsString())
-                .build();
-        return ResponseEntity.status(400).body(error);
+        return buildBadRequest(e);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequestException(BadRequestException e) {
+        return buildBadRequest(e);
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -63,5 +57,15 @@ public final class GlobalExceptionHandler {
 
     private static String getCurrentTimestampAsString() {
         return LocalDateTime.now().format(FORMATTER);
+    }
+
+    private static ResponseEntity<ApiError> buildBadRequest(Throwable e) {
+        final ApiError error = ApiError.builder()
+                .status("BAD_REQUEST")
+                .reason("Incorrectly made request")
+                .message(e.getMessage())
+                .timestamp(getCurrentTimestampAsString())
+                .build();
+        return ResponseEntity.status(400).body(error);
     }
 }
