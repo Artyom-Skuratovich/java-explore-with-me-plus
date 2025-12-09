@@ -24,6 +24,12 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findUsersByIds(Iterable<Long> ids, int from, int size) {
+        if (ids == null) {
+            return userRepository.findAll(PageRequest.of(from,size))
+                    .stream()
+                    .map(UserMapper::toDto)
+                    .toList();
+        }
         return userRepository.findByIdIn(ids, PageRequest.of(from, size))
                 .stream()
                 .map(UserMapper::toDto)

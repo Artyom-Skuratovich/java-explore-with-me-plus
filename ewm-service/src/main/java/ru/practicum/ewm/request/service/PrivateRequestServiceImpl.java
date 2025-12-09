@@ -19,6 +19,7 @@ import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -70,8 +71,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
     public ParticipationRequestDto cancel(long userId, long requestId) {
         final Request request = requestRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
-
-        request.setStatus(RequestStatus.REJECTED);
+        request.setStatus(RequestStatus.CANCELED);
         return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
 
@@ -88,7 +88,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
 
     @Override
     public List<ParticipationRequestDto> findEventRequestsByUser(long userId, long eventId) {
-        return requestRepository.findAllByRequesterIdAndEventId(userId, eventId)
+        return requestRepository.findByEventId(eventId)
                 .stream()
                 .map(RequestMapper::toParticipationRequestDto)
                 .toList();
@@ -109,6 +109,8 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
         }
 
         final EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult();
+        List<ParticipationRequestDto> rejectedRequest = new ArrayList<>();
+        List<ParticipationRequestDto> confirmedRequest = new ArrayList<>();
         for (Long id : updatedRequest.getRequestIds()) {
             Request request = requestRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException("Request with id=" + id + " was not found"));
@@ -133,12 +135,13 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
 
             final ParticipationRequestDto dto = RequestMapper.toParticipationRequestDto(request);
             if (saved.getStatus() == RequestStatus.CONFIRMED) {
-                result.getConfirmedRequests().add(dto);
+                confirmedRequest.add(dto);
             } else {
-                result.getRejectedRequests().add(dto);
+                rejectedRequest.add(dto);
             }
         }
-
+        result.setConfirmedRequests(confirmedRequest);
+        result.setRejectedRequests(rejectedRequest);
         return result;
     }
 }
