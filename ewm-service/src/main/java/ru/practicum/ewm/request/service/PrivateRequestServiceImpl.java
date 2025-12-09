@@ -88,7 +88,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
 
     @Override
     public List<ParticipationRequestDto> findEventRequestsByUser(long userId, long eventId) {
-        return requestRepository.findByEventId(eventId)
+        return requestRepository.findAllByEventIdAndEventInitiatorId(eventId, userId)
                 .stream()
                 .map(RequestMapper::toParticipationRequestDto)
                 .toList();
