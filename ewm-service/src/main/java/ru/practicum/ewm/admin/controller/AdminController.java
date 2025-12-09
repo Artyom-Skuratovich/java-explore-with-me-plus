@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.service.AdminCategoryService;
+import ru.practicum.ewm.compilation.dto.CompilationDto;
+import ru.practicum.ewm.compilation.dto.NewCompilationDto;
+import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.compilation.service.AdminCompilationService;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.model.EventState;
@@ -34,6 +38,7 @@ public class AdminController {
     private final AdminCategoryService categoryService;
     private final AdminUserService userService;
     private final AdminEventService eventService;
+    private final AdminCompilationService compilationService;
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -97,5 +102,25 @@ public class AdminController {
             @Valid @RequestBody UpdateEventAdminRequest updatedEvent,
             HttpServletRequest request) {
         return eventService.update(id, updatedEvent, request);
+    }
+
+    @PostMapping("/compilations")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto newCompilation) {
+        return compilationService.create(newCompilation);
+    }
+
+    @PatchMapping("/compilations/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public CompilationDto updateCompilation(
+            @PathVariable long id,
+            @Valid @RequestBody UpdateCompilationRequest request) {
+        return compilationService.update(id, request);
+    }
+
+    @DeleteMapping("/compilations/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCompilation(@PathVariable long id) {
+        compilationService.delete(id);
     }
 }
