@@ -45,9 +45,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=824322
 
   ewm-service:
-    build:
-      context: .
-      dockerfile: ./ewm-service/Dockerfile
+    build: ewm-service
     image: ewm-service
     container_name: ewm-service
     ports:
