@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewEventDto {
