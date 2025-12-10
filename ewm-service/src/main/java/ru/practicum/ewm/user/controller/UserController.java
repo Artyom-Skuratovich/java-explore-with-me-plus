@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import ru.practicum.ewm.request.service.PrivateRequestService;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -76,6 +78,7 @@ public class UserController {
             @Valid @RequestBody EventRequestStatusUpdateRequest updateRequest,
             @PathVariable long userId,
             @PathVariable long eventId) {
+        log.info("users/{}/events/{}/requests -> Update participation request status", userId, eventId);
         return requestService.updateRequestStatus(userId, eventId, updateRequest);
     }
 
@@ -90,7 +93,10 @@ public class UserController {
     public ParticipationRequestDto createRequest(
             @PathVariable long userId,
             @RequestParam @Min(value = 1, message = "The eventId must be bigger than or equal to 1") long eventId) {
-        return requestService.create(userId, eventId);
+        log.info("users/{}/requests -> Create participation request", userId);
+        final ParticipationRequestDto response = requestService.create(userId, eventId);
+        log.info("Request status={}", response.getStatus());
+        return response;
     }
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")

@@ -125,8 +125,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
                             RequestStatus.REJECTED :
                             RequestStatus.CONFIRMED
             );
-            final Request saved = requestRepository.save(request);
-            if (++participants == event.getParticipantLimit()) {
+            if (participants++ == event.getParticipantLimit()) {
                 requestRepository.updateStatusesByEventAndCurrentStatus(
                         RequestStatus.PENDING,
                         RequestStatus.REJECTED,
@@ -135,6 +134,7 @@ public class PrivateRequestServiceImpl implements PrivateRequestService {
                 break;
             }
 
+            final Request saved = requestRepository.save(request);
             final ParticipationRequestDto dto = RequestMapper.toParticipationRequestDto(request);
             if (saved.getStatus() == RequestStatus.CONFIRMED) {
                 result.getConfirmedRequests().add(dto);

@@ -37,9 +37,12 @@ public class EventStatsService {
 
         final HashMap<Long, Long> eventViews = new HashMap<>();
         for (ViewStats s : stats) {
-            final long eventId = Long.parseLong(s.getUri().replace(baseUri + "/", ""));
-            final long views = eventViews.getOrDefault(eventId, 0L);
-            eventViews.put(eventId, views + s.getHits());
+            final String strId = s.getUri().replace(baseUri + "/", "");
+            if (!strId.equals(baseUri)) {
+                final long eventId = Long.parseLong(strId);
+                final long views = eventViews.getOrDefault(eventId, 0L);
+                eventViews.put(eventId, views + s.getHits());
+            }
         }
         return eventViews;
     }

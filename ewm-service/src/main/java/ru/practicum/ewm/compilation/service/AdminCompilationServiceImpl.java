@@ -29,7 +29,7 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
                 eventRepository.findAllById(newCompilation.getEvents());
 
         final Compilation saved = compilationRepository.save(CompilationMapper.from(newCompilation, events));
-        return CompilationMapper.toDto(saved, events);
+        return CompilationMapper.toDto(saved);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
             compilation.setEvents(events);
         }
 
-        return CompilationMapper.toDto(compilationRepository.save(compilation), compilation.getEvents());
+        return CompilationMapper.toDto(compilationRepository.save(compilation));
     }
 
     @Override

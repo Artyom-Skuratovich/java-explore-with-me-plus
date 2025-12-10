@@ -24,14 +24,14 @@ public final class CompilationMapper {
                 .build();
     }
 
-    public static CompilationDto toDto(Compilation compilation, List<Event> events) {
+    public static CompilationDto toDto(Compilation compilation) {
         return CompilationDto.builder()
                 .id(compilation.getId())
                 .title(compilation.getTitle())
                 .pinned(compilation.isPinned())
                 .events(
-                        events != null ?
-                                events.stream().map(EventMapper::toShortDto).toList() :
+                        compilation.getEvents() != null ?
+                                compilation.getEvents().stream().map(EventMapper::toShortDto).toList() :
                                 List.of()
                 )
                 .build();
