@@ -24,14 +24,17 @@ import static ru.practicum.stats.common.Constants.DATE_TIME_FORMAT;
 
 @Component
 public final class StatsClient {
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+
     private final RestTemplate rest;
     private final ObjectMapper mapper;
 
     public StatsClient(
-            @Value("${stats-server.url}") String serverUrl,
+            @Value("${stats.server.url:http://stats-server:9090}") String serverUrl,
             RestTemplateBuilder builder,
-            ObjectMapper mapper) {
+            ObjectMapper mapper
+    ) {
         this.rest = builder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                 .build();
@@ -47,9 +50,11 @@ public final class StatsClient {
                 .queryParam("start", start.format(FORMATTER))
                 .queryParam("end", end.format(FORMATTER))
                 .queryParam("unique", unique);
+
         if (uris != null) {
             uris.forEach(uri -> builder.queryParam("uris", uri));
         }
+
         final String url = builder.build().toUriString();
         final ResponseEntity<ViewStats[]> response = request(HttpMethod.GET, url, null, ViewStats[].class);
         final ViewStats[] body = response.getBody();
