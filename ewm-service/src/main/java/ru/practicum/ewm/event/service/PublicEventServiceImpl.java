@@ -46,7 +46,7 @@ public class PublicEventServiceImpl implements PublicEventService {
             HttpServletRequest request) {
 
         if (rangeStart == null) {
-            rangeStart = LocalDateTime.now().plusNanos(1);
+            rangeStart = EventDateTimeUtils.defaultStart();
         }
         if (rangeEnd == null) {
             rangeEnd = EventDateTimeUtils.defaultEnd();
@@ -62,7 +62,7 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         final List<Event> events = eventRepository.findAllPublishedByCriteria(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable
-        ).stream().toList();
+        ).getContent();
 
         final List<EventShortDto> result = new ArrayList<>(
                 dtoService.buildShortDtoList(events, rangeStart, rangeEnd, request.getRequestURI())
@@ -71,7 +71,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         statsService.sendHits(events, request);
 
         if (sort == EventSortOption.VIEWS) {
-            result.sort((e1, e2) -> (int) (e2.getViews() - e1.getViews()));
+            result.sort((e1, e2) -> Long.compare(e2.getViews(), e1.getViews()));
         }
 
         return result;
