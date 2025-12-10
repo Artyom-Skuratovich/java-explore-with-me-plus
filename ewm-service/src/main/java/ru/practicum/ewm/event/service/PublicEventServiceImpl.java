@@ -15,8 +15,8 @@ import ru.practicum.ewm.event.dto.EventSortOption;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
-import ru.practicum.ewm.event.util.EventDtoService;
 import ru.practicum.ewm.event.util.EventDateTimeUtils;
+import ru.practicum.ewm.event.util.EventDtoService;
 import ru.practicum.ewm.event.util.EventStatsService;
 import ru.practicum.ewm.event.util.UrlUtils;
 
@@ -44,6 +44,7 @@ public class PublicEventServiceImpl implements PublicEventService {
             int from,
             int size,
             HttpServletRequest request) {
+
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now().plusNanos(1);
         }
@@ -56,10 +57,13 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         statsService.sendHit(request);
 
-        final Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.ASC, "eventDate"));
+        int page = from / size;
+        final Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "eventDate"));
+
         final List<Event> events = eventRepository.findAllPublishedByCriteria(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable
         ).stream().toList();
+
         final List<EventShortDto> result = new ArrayList<>(
                 dtoService.buildShortDtoList(events, rangeStart, rangeEnd, request.getRequestURI())
         );
@@ -69,6 +73,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         if (sort == EventSortOption.VIEWS) {
             result.sort((e1, e2) -> (int) (e2.getViews() - e1.getViews()));
         }
+
         return result;
     }
 
