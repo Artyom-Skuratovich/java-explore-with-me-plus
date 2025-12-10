@@ -14,16 +14,12 @@ import ru.practicum.stats.dto.HitDto;
 import ru.practicum.stats.dto.ViewStats;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class EventStatsService {
     private final StatsClient statsClient;
     private final RequestRepository requestRepository;
@@ -34,7 +30,7 @@ public class EventStatsService {
             LocalDateTime end,
             String baseUri) {
 
-        if (events.isEmpty()) {
+        if (events == null || events.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -42,21 +38,29 @@ public class EventStatsService {
                 .map(e -> baseUri + "/" + e.getId())
                 .collect(Collectors.toSet());
 
-        List<ViewStats> stats;
-        try {
-            stats = statsClient.findStats(start, end, uris, true);
-        } catch (Exception ex) {
-            log.warn("Failed to get stats from stats-service: {}", ex.getMessage());
+        if (uris.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        final HashMap<Long, Long> eventViews = new HashMap<>();
+        List<ViewStats> stats;
+        try {
+            stats = statsClient.findStats(start, end, uris, true);
+        } catch (RuntimeException ex) {
+            log.warn("Failed to get stats from stats-service, returning zero views. URIs={}", uris, ex);
+            return Collections.emptyMap();
+        }
+
+        final Map<Long, Long> eventViews = new HashMap<>();
         for (ViewStats s : stats) {
             final String strId = s.getUri().replace(baseUri + "/", "");
             if (!strId.equals(baseUri)) {
-                final long eventId = Long.parseLong(strId);
-                final long views = eventViews.getOrDefault(eventId, 0L);
-                eventViews.put(eventId, views + s.getHits());
+                try {
+                    final long eventId = Long.parseLong(strId);
+                    final long views = eventViews.getOrDefault(eventId, 0L);
+                    eventViews.put(eventId, views + s.getHits());
+                } catch (NumberFormatException ex) {
+                    log.warn("Cannot parse event id from stats uri: uri='{}', baseUri='{}'", s.getUri(), baseUri, ex);
+                }
             }
         }
         return eventViews;
@@ -67,28 +71,29 @@ public class EventStatsService {
     }
 
     public void sendHits(List<Event> events, HttpServletRequest request) {
-        if (events.isEmpty()) {
+        if (events == null || events.isEmpty()) {
             return;
         }
 
         final HitCreateDto hit = HitMapper.buildCreateHit(request);
-        events.forEach(e -> {
+
+        for (Event e : events) {
             hit.setUri(request.getRequestURI() + "/" + e.getId());
             hit.setTimestamp(LocalDateTime.now());
             try {
                 statsClient.hit(hit);
-            } catch (Exception ex) {
-                log.warn("Failed to send hit for event {} to stats-service: {}", e.getId(), ex.getMessage());
+            } catch (RuntimeException ex) {
+                log.warn("Failed to send hit for eventId={}, uri='{}'", e.getId(), hit.getUri(), ex);
             }
-        });
+        }
     }
 
     public void sendHit(HttpServletRequest request) {
         final HitCreateDto hit = HitMapper.buildCreateHit(request);
         try {
             HitDto ignored = statsClient.hit(hit);
-        } catch (Exception ex) {
-            log.warn("Failed to send hit to stats-service: {}", ex.getMessage());
+        } catch (RuntimeException ex) {
+            log.warn("Failed to send single hit for uri='{}'", hit.getUri(), ex);
         }
     }
 }
