@@ -2,6 +2,7 @@ package ru.practicum.ewm.event.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.event.mapper.HitMapper;
 import ru.practicum.ewm.event.model.Event;
@@ -17,8 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EventStatsService {
@@ -30,10 +33,22 @@ public class EventStatsService {
             LocalDateTime start,
             LocalDateTime end,
             String baseUri) {
+
+        if (events.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
         final Set<String> uris = events.stream()
                 .map(e -> baseUri + "/" + e.getId())
                 .collect(Collectors.toSet());
-        final List<ViewStats> stats = statsClient.findStats(start, end, uris, true);
+
+        List<ViewStats> stats;
+        try {
+            stats = statsClient.findStats(start, end, uris, true);
+        } catch (Exception ex) {
+            log.warn("Failed to get stats from stats-service: {}", ex.getMessage());
+            return Collections.emptyMap();
+        }
 
         final HashMap<Long, Long> eventViews = new HashMap<>();
         for (ViewStats s : stats) {
@@ -52,16 +67,28 @@ public class EventStatsService {
     }
 
     public void sendHits(List<Event> events, HttpServletRequest request) {
+        if (events.isEmpty()) {
+            return;
+        }
+
         final HitCreateDto hit = HitMapper.buildCreateHit(request);
         events.forEach(e -> {
             hit.setUri(request.getRequestURI() + "/" + e.getId());
             hit.setTimestamp(LocalDateTime.now());
-            statsClient.hit(hit);
+            try {
+                statsClient.hit(hit);
+            } catch (Exception ex) {
+                log.warn("Failed to send hit for event {} to stats-service: {}", e.getId(), ex.getMessage());
+            }
         });
     }
 
     public void sendHit(HttpServletRequest request) {
         final HitCreateDto hit = HitMapper.buildCreateHit(request);
-        final HitDto ignored = statsClient.hit(hit);
+        try {
+            HitDto ignored = statsClient.hit(hit);
+        } catch (Exception ex) {
+            log.warn("Failed to send hit to stats-service: {}", ex.getMessage());
+        }
     }
 }
