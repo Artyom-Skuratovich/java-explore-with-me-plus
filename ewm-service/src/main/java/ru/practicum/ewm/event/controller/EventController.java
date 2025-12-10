@@ -36,15 +36,27 @@ public class EventController {
             @RequestParam(required = false) String text,
             @RequestParam(required = false) Set<Long> categories,
             @RequestParam(required = false) Boolean paid,
-            @DateTimeFormat(pattern = DATE_TIME_FORMAT) @RequestParam(required = false) LocalDateTime rangeStart,
-            @DateTimeFormat(pattern = DATE_TIME_FORMAT) @RequestParam(required = false) LocalDateTime rangeEnd,
-            @RequestParam(required = false, defaultValue = "false") boolean onlyAvailable,
-            @RequestParam(required = false, defaultValue = "VIEWS") EventSortOption sort,
-            @PositiveOrZero @RequestParam(required = false, defaultValue = "0") int from,
-            @Positive @RequestParam(required = false, defaultValue = "10") int size,
-            HttpServletRequest request) {
+            @DateTimeFormat(pattern = DATE_TIME_FORMAT)
+            @RequestParam(required = false) LocalDateTime rangeStart,
+            @DateTimeFormat(pattern = DATE_TIME_FORMAT)
+            @RequestParam(required = false) LocalDateTime rangeEnd,
+            @RequestParam(defaultValue = "false") boolean onlyAvailable,
+            @RequestParam(defaultValue = "VIEWS") EventSortOption sort,
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
         return eventService.findEventsByCriteria(
-                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request
+                text,
+                categories,
+                paid,
+                rangeStart,
+                rangeEnd,
+                onlyAvailable,
+                sort,
+                from,
+                size,
+                request
         );
     }
 }
