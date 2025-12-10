@@ -53,13 +53,13 @@ public class AdminEventServiceImpl implements AdminEventService {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
 
-        statsService.sendHit(request);
+        //statsService.sendHit(request);
 
         final List<Event> events = eventRepository.findAllByCriteria(
                 users, states, categories, rangeStart, rangeEnd, PageRequest.of(from, size)
         ).stream().toList();
 
-        statsService.sendHits(events, request);
+        //statsService.sendHits(events, request);
 
         return dtoService.buildFullDtoList(events, rangeStart, rangeEnd, request.getRequestURI());
     }
@@ -101,7 +101,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 UrlUtils.removeTrailingNumberSegment(request.getRequestURI())
         );
 
-        statsService.sendHit(request);
+        //statsService.sendHit(request);
 
         return dto;
     }
