@@ -8,56 +8,93 @@ import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class EventDtoService {
+
     private final EventStatsService statsService;
 
     public List<EventShortDto> buildShortDtoList(
             List<Event> events,
             LocalDateTime start,
             LocalDateTime end,
-            String baseUri) {
+            String baseUri
+    ) {
+        if (events == null || events.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         final Map<Long, Long> views = statsService.countEventViews(events, start, end, baseUri);
-        return events.stream()
-                .map(EventMapper::toShortDto)
-                .peek(dto -> {
-                    dto.setViews(views.getOrDefault(dto.getId(), 0L));
-                    dto.setConfirmedRequests(statsService.countConfirmedRequests(dto.getId()));
-                })
-                .toList();
+
+        List<EventShortDto> result = new ArrayList<>(events.size());
+        for (Event event : events) {
+            long eventId = event.getId();
+            long eventViews = views.getOrDefault(eventId, 0L);
+            long confirmedRequests = statsService.countConfirmedRequests(eventId);
+
+            EventShortDto dto = EventMapper.toShortDto(event);
+            dto.setViews(eventViews);
+            dto.setConfirmedRequests(confirmedRequests);
+
+            result.add(dto);
+        }
+
+        return result;
     }
 
     public List<EventFullDto> buildFullDtoList(
             List<Event> events,
             LocalDateTime start,
             LocalDateTime end,
-            String baseUri) {
+            String baseUri
+    ) {
+        if (events == null || events.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         final Map<Long, Long> views = statsService.countEventViews(events, start, end, baseUri);
-        return events.stream()
-                .map(EventMapper::toFullDto)
-                .peek(dto -> {
-                    dto.setViews(views.getOrDefault(dto.getId(), 0L));
-                    dto.setConfirmedRequests(statsService.countConfirmedRequests(dto.getId()));
-                })
-                .toList();
+
+        List<EventFullDto> result = new ArrayList<>(events.size());
+        for (Event event : events) {
+            long eventId = event.getId();
+            long eventViews = views.getOrDefault(eventId, 0L);
+            long confirmedRequests = statsService.countConfirmedRequests(eventId);
+
+            EventFullDto dto = EventMapper.toFullDto(event);
+            dto.setViews(eventViews);
+            dto.setConfirmedRequests(confirmedRequests);
+
+            result.add(dto);
+        }
+
+        return result;
     }
 
     public EventFullDto buildFullDto(
             Event event,
             LocalDateTime start,
             LocalDateTime end,
-            String baseUri) {
-        final long views = statsService.countEventViews(
-                List.of(event), start, end, baseUri).getOrDefault(event.getId(), 0L
-        );
-        final long confirmedRequests = statsService.countConfirmedRequests(event.getId());
+            String baseUri
+    ) {
+        if (event == null) {
+            return null;
+        }
+
+        final long eventId = event.getId();
+        final long views = statsService
+                .countEventViews(List.of(event), start, end, baseUri)
+                .getOrDefault(eventId, 0L);
+        final long confirmedRequests = statsService.countConfirmedRequests(eventId);
+
         EventFullDto dto = EventMapper.toFullDto(event);
         dto.setViews(views);
         dto.setConfirmedRequests(confirmedRequests);
+
         return dto;
     }
 }
