@@ -59,8 +59,8 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         int page = from / size;
         final Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "eventDate"));
-        if (text ==null) {
-            text ="";
+        if (text == null) {
+            text = "";
         }
 
 
