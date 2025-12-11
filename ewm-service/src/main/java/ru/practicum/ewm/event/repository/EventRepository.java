@@ -28,7 +28,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "JOIN FETCH e.category " +
             "JOIN FETCH e.initiator " +
             "WHERE e.state = 'PUBLISHED' " +
-            "AND ((:text) IS NULL OR LOWER(e.annotation) LIKE CONCAT('%', LOWER(:text), '%') " +
+            "AND ((:text) = '' OR LOWER(e.annotation) LIKE CONCAT('%', LOWER(:text), '%') " +
             "OR LOWER(e.description) LIKE CONCAT('%', LOWER(:text), '%')) " +
             "AND ((:categories) IS NULL OR e.category.id IN :categories) " +
             "AND ((:paid) IS NULL OR e.paid = :paid) " +

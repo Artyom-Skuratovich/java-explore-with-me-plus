@@ -59,6 +59,10 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         int page = from / size;
         final Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "eventDate"));
+        if (text ==null) {
+            text ="";
+        }
+
 
         final List<Event> events = eventRepository.findAllPublishedByCriteria(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable
