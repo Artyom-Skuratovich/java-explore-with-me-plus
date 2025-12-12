@@ -2,6 +2,7 @@ package ru.practicum.ewm.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.common.exception.BadRequestException;
@@ -24,10 +25,20 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findUsersByIds(Iterable<Long> ids, int from, int size) {
-        return userRepository.findByIdIn(ids, PageRequest.of(from, size))
-                .stream()
-                .map(UserMapper::toDto)
-                .toList();
+        List<UserDto> userDtoList;
+        if (ids != null) {
+            userDtoList = userRepository.findAllById(ids)
+                    .stream()
+                    .map(UserMapper::toDto)
+                    .toList();
+        } else {
+            Pageable pageable = PageRequest.of(0, size); // страница 0, лимит = limit
+            userDtoList = userRepository.findUsersFromId(from, pageable)
+                    .stream()
+                    .map(UserMapper::toDto)
+                    .toList();
+        }
+        return userDtoList;
     }
 
     @Override

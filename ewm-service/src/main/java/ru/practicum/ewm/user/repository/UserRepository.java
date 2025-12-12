@@ -7,13 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.ewm.user.model.User;
 
+
 public interface UserRepository extends JpaRepository<User, Long> {
-    @Query("SELECT u FROM User u " +
-            "WHERE (:ids IS NULL OR u.id IN :ids)")
-    Page<User> findByIdIn(
-            @Param("ids") Iterable<Long> ids,
-            Pageable pageable
-    );
+    @Query("SELECT u FROM User u WHERE u.id >= :startId ORDER BY u.id ASC")
+    Page<User> findUsersFromId(@Param("startId") long startId, Pageable pageable);
 
     boolean existsByEmail(String email);
 }
