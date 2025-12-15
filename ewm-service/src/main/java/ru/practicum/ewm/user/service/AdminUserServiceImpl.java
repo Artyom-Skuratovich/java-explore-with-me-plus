@@ -1,17 +1,15 @@
 package ru.practicum.ewm.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
+import ru.practicum.ewm.user.repository.CustomUserRepository;
 import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.util.List;
@@ -21,39 +19,21 @@ import java.util.List;
 @Transactional
 public class AdminUserServiceImpl implements AdminUserService {
     private final UserRepository userRepository;
+    private final CustomUserRepository customUserRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findUsersByIds(Iterable<Long> ids, int from, int size) {
-        List<UserDto> userDtoList;
-        if (ids != null) {
-            userDtoList = userRepository.findAllById(ids)
-                    .stream()
-                    .map(UserMapper::toDto)
-                    .toList();
-        } else {
-            Pageable pageable = PageRequest.of(0, size); // страница 0, лимит = limit
-            userDtoList = userRepository.findUsersFromId(from, pageable)
-                    .stream()
-                    .map(UserMapper::toDto)
-                    .toList();
-        }
-        return userDtoList;
+        return customUserRepository.findAllByIdsOrAll(ids, from, size)
+                .stream()
+                .map(UserMapper::toDto)
+                .toList();
     }
 
     @Override
     public UserDto create(NewUserRequest newUser) {
         if (userRepository.existsByEmail(newUser.getEmail())) {
             throw new ConflictException("A user with this email already exists");
-        }
-        final String[] emailParts = newUser.getEmail().split("@");
-        final String localPart = emailParts[0];
-        if (localPart.length() > 64) {
-            throw new BadRequestException("The local part of the email address must not exceed 64 characters");
-        }
-        final String domain = emailParts[1].split("\\.")[0];
-        if (domain.length() > 63) {
-            throw new BadRequestException("The email domain must not exceed 63 characters");
         }
         final User saved = userRepository.save(UserMapper.from(newUser));
         return UserMapper.toDto(saved);

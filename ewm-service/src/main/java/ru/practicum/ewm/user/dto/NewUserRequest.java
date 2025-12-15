@@ -1,20 +1,19 @@
 package ru.practicum.ewm.user.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.ewm.common.annotation.SplitEmailValidation;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewUserRequest {
-    @NotBlank
-    @Email
+    @SplitEmailValidation
     @Size(min = 6, max = 254, message = "The email address must be between 6 and 64 characters long")
     private String email;
 
