@@ -31,8 +31,8 @@ services:
 
   stats-server:
     build: stats/stats-service
-    image: stats-service
-    container_name: stats-service
+    image: stats-server
+    container_name: stats-server
     ports:
       - "9090:9090"
     depends_on:
@@ -45,9 +45,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=824322
 
   ewm-service:
-    build:
-      context: .
-      dockerfile: ./ewm/ewm-service/Dockerfile
+    build: ewm-service
     image: ewm-service
     container_name: ewm-service
     ports:
@@ -55,8 +53,11 @@ services:
     depends_on:
       ewm-db:
         condition: service_healthy
+      stats-server:
+        condition: service_started
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=824322
+      - STATS_SERVER_URL=http://stats-server:9090
       - SERVER_PORT=8080

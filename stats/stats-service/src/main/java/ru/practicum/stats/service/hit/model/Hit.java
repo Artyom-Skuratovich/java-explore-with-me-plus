@@ -1,8 +1,10 @@
 package ru.practicum.stats.service.hit.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "hits")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Hit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,5 +25,6 @@ public class Hit {
 
     private String ip;
 
+    @Column(name = "created")
     private LocalDateTime timestamp;
 }
