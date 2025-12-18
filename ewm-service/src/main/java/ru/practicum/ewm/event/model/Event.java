@@ -57,4 +57,7 @@ public class Event {
 
     @JoinColumn(name = "participant_limit")
     private int participantLimit;
+
+    @Column(name = "mods_comment")
+    private String mods_comment;
 }

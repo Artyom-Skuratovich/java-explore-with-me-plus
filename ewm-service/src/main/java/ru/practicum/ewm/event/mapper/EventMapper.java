@@ -61,6 +61,7 @@ public final class EventMapper {
                 .requestModeration(event.isRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
+                .mods_comment(event.getMods_comment() == null ? "" : event.getMods_comment())
                 .views(0)
                 .build();
     }
@@ -114,6 +115,9 @@ public final class EventMapper {
         }
         if (!event.isRequestModeration()) {
             event.setPublishedOn(LocalDateTime.now());
+        }
+        if (updatedEvent.getMods_comment() != null) {
+            event.setMods_comment(updatedEvent.getMods_comment());
         }
     }
 }
