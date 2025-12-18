@@ -68,6 +68,7 @@ public final class EventMapper {
 
     public static void updateEventProperties(UpdateEventUserRequest updatedEvent, Event event, Category category) {
         updateEventFromRequest(updatedEvent, event, category);
+
         final UserEventAction stateAction = updatedEvent.getStateAction();
         if (stateAction != null) {
             event.setState(stateAction == UserEventAction.CANCEL_REVIEW ? EventState.CANCELED : EventState.PENDING);
@@ -76,12 +77,18 @@ public final class EventMapper {
 
     public static void updateEventProperties(UpdateEventAdminRequest updatedEvent, Event event, Category category) {
         updateEventFromRequest(updatedEvent, event, category);
+
         final AdminEventAction stateAction = updatedEvent.getStateAction();
         if (stateAction != null) {
             event.setState(stateAction == AdminEventAction.REJECT_EVENT ? EventState.CANCELED : EventState.PUBLISHED);
         }
+
         if (stateAction == AdminEventAction.PUBLISH_EVENT) {
             event.setPublishedOn(LocalDateTime.now());
+        }
+
+        if (stateAction == AdminEventAction.REJECT_EVENT && updatedEvent.getMods_comment() != null) {
+            event.setMods_comment(updatedEvent.getMods_comment());
         }
     }
 
@@ -115,9 +122,6 @@ public final class EventMapper {
         }
         if (!event.isRequestModeration()) {
             event.setPublishedOn(LocalDateTime.now());
-        }
-        if (updatedEvent.getMods_comment() != null) {
-            event.setMods_comment(updatedEvent.getMods_comment());
         }
     }
 }
