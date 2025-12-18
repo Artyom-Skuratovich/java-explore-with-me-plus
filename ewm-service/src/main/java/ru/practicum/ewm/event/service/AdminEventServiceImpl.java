@@ -12,6 +12,7 @@ import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
+import ru.practicum.ewm.event.dto.AdminEventAction;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
@@ -79,6 +80,12 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         if (event.getState().equals(EventState.PUBLISHED)) {
             throw new ConflictException("The event has already been published");
+        }
+
+        if (updatedEvent.getStateAction() == AdminEventAction.REJECT_EVENT) {
+            if (updatedEvent.getMods_comment() == null || updatedEvent.getMods_comment().isBlank()) {
+                throw new BadRequestException("mods_comment must be provided when rejecting an event");
+            }
         }
 
         EventMapper.updateEventProperties(updatedEvent, event, category);
