@@ -44,4 +44,5 @@ public class EventFullDto {
     private EventState state;
     private String title;
     private long views;
+    private String modsComment;
 }
