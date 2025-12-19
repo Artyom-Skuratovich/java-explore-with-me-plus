@@ -36,5 +36,5 @@ public abstract class UpdateEventRequest {
     @Length(min = 3, max = 120)
     private String title;
 
-    private String mods_comment;
+    private String modsComment;
 }

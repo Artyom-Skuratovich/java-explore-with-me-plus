@@ -59,5 +59,5 @@ public class Event {
     private int participantLimit;
 
     @Column(name = "mods_comment")
-    private String mods_comment;
+    private String modsComment;
 }

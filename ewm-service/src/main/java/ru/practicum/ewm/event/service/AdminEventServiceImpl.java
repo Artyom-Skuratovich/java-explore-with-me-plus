@@ -10,9 +10,9 @@ import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
+import ru.practicum.ewm.event.dto.AdminEventAction;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.event.dto.AdminEventAction;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventState;
@@ -29,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminEventServiceImpl implements AdminEventService {
+
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventDtoService dtoService;
@@ -44,6 +45,7 @@ public class AdminEventServiceImpl implements AdminEventService {
             int from,
             int size,
             HttpServletRequest request) {
+
         if (rangeStart == null) {
             rangeStart = EventDateTimeUtils.defaultStart();
         }
@@ -54,7 +56,7 @@ public class AdminEventServiceImpl implements AdminEventService {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
 
-        final List<Event> events = eventRepository.findAllByCriteria(
+        List<Event> events = eventRepository.findAllByCriteria(
                 users, states, categories, rangeStart, rangeEnd, PageRequest.of(from, size)
         ).stream().toList();
 
@@ -64,11 +66,13 @@ public class AdminEventServiceImpl implements AdminEventService {
     @Override
     @Transactional
     public EventFullDto update(long id, UpdateEventAdminRequest updatedEvent, HttpServletRequest request) {
-        final Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
-        final Long categoryId = updatedEvent.getCategory();
 
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+
+        Long categoryId = updatedEvent.getCategory();
         Category category = null;
+
         if (categoryId != null) {
             category = categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new NotFoundException("Category with id=" + categoryId + " was not found"));
@@ -78,32 +82,31 @@ public class AdminEventServiceImpl implements AdminEventService {
             throw new ConflictException("The event has already been canceled");
         }
 
-        if (event.getState().equals(EventState.PUBLISHED)) {
+        if (event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("The event has already been published");
         }
 
         if (updatedEvent.getStateAction() == AdminEventAction.REJECT_EVENT) {
-            if (updatedEvent.getMods_comment() == null || updatedEvent.getMods_comment().isBlank()) {
-                throw new BadRequestException("mods_comment must be provided when rejecting an event");
+            if (updatedEvent.getModsComment() == null || updatedEvent.getModsComment().isBlank()) {
+                throw new BadRequestException("modsComment must be provided when rejecting an event");
             }
         }
 
         EventMapper.updateEventProperties(updatedEvent, event, category);
         ensureStartDateIsAtLeastAnHourAfterPublication(event.getEventDate(), event.getPublishedOn());
 
-        final EventFullDto dto = dtoService.buildFullDto(
+        return dtoService.buildFullDto(
                 eventRepository.save(event),
                 EventDateTimeUtils.defaultStart(),
                 EventDateTimeUtils.defaultEnd(),
                 UrlUtils.removeTrailingNumberSegment(request.getRequestURI())
         );
-
-        return dto;
     }
 
     public static void ensureStartDateIsAtLeastAnHourAfterPublication(
             LocalDateTime startDate,
             LocalDateTime publicationDate) {
+
         if (publicationDate != null && startDate.isBefore(publicationDate.plusHours(1))) {
             throw new ConflictException("Start date must be at least one hour after publication date");
         }
