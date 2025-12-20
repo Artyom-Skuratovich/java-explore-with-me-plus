@@ -62,7 +62,7 @@ public final class EventMapper {
                 .requestModeration(event.isRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
-                .modsComment(event.getModsComment() == null ? "" : event.getModsComment())
+                .modsComment(event.getModsComment() == null ? null : event.getModsComment())
                 .views(0)
                 .build();
     }
