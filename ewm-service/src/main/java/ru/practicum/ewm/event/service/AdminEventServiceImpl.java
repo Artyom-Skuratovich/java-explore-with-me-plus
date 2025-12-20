@@ -10,7 +10,6 @@ import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.common.exception.BadRequestException;
 import ru.practicum.ewm.common.exception.ConflictException;
 import ru.practicum.ewm.common.exception.NotFoundException;
-import ru.practicum.ewm.event.dto.AdminEventAction;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -19,7 +18,6 @@ import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.event.util.EventDateTimeUtils;
 import ru.practicum.ewm.event.util.EventDtoService;
-import ru.practicum.ewm.event.util.EventStatsService;
 import ru.practicum.ewm.event.util.UrlUtils;
 
 import java.time.LocalDateTime;
@@ -29,11 +27,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminEventServiceImpl implements AdminEventService {
-
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventDtoService dtoService;
-    private final EventStatsService statsService;
 
     @Override
     public List<EventFullDto> findAllByCriteria(
@@ -66,11 +62,10 @@ public class AdminEventServiceImpl implements AdminEventService {
     @Override
     @Transactional
     public EventFullDto update(long id, UpdateEventAdminRequest updatedEvent, HttpServletRequest request) {
-
-        Event event = eventRepository.findById(id)
+        final Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
-        Long categoryId = updatedEvent.getCategory();
+        final Long categoryId = updatedEvent.getCategory();
         Category category = null;
 
         if (categoryId != null) {
@@ -84,12 +79,6 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         if (event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("The event has already been published");
-        }
-
-        if (updatedEvent.getStateAction() == AdminEventAction.REJECT_EVENT) {
-            if (updatedEvent.getModsComment() == null || updatedEvent.getModsComment().isBlank()) {
-                throw new BadRequestException("modsComment must be provided when rejecting an event");
-            }
         }
 
         EventMapper.updateEventProperties(updatedEvent, event, category);
