@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS events (
     paid BOOLEAN NOT NULL,
     request_moderation BOOLEAN NOT NULL,
     participant_limit INT NOT NULL,
+    mods_comment VARCHAR NULL,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     FOREIGN KEY (initiator_id) REFERENCES users(id) ON DELETE CASCADE
 );

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EventMapper {
+
     public static Event from(NewEventDto newEvent, Category category, User initiator) {
         return Event.builder()
                 .category(category)
@@ -61,26 +62,38 @@ public final class EventMapper {
                 .requestModeration(event.isRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
+                .modsComment(event.getModsComment() == null ? null : event.getModsComment())
                 .views(0)
                 .build();
     }
 
     public static void updateEventProperties(UpdateEventUserRequest updatedEvent, Event event, Category category) {
         updateEventFromRequest(updatedEvent, event, category);
-        final UserEventAction stateAction = updatedEvent.getStateAction();
+
+        UserEventAction stateAction = updatedEvent.getStateAction();
         if (stateAction != null) {
-            event.setState(stateAction == UserEventAction.CANCEL_REVIEW ? EventState.CANCELED : EventState.PENDING);
+            event.setState(stateAction == UserEventAction.CANCEL_REVIEW
+                    ? EventState.CANCELED
+                    : EventState.PENDING);
         }
     }
 
     public static void updateEventProperties(UpdateEventAdminRequest updatedEvent, Event event, Category category) {
         updateEventFromRequest(updatedEvent, event, category);
-        final AdminEventAction stateAction = updatedEvent.getStateAction();
+
+        AdminEventAction stateAction = updatedEvent.getStateAction();
         if (stateAction != null) {
-            event.setState(stateAction == AdminEventAction.REJECT_EVENT ? EventState.CANCELED : EventState.PUBLISHED);
+            event.setState(stateAction == AdminEventAction.REJECT_EVENT
+                    ? EventState.CANCELED
+                    : EventState.PUBLISHED);
         }
+
         if (stateAction == AdminEventAction.PUBLISH_EVENT) {
             event.setPublishedOn(LocalDateTime.now());
+        }
+
+        if (stateAction == AdminEventAction.REJECT_EVENT && updatedEvent.getModsComment() != null) {
+            event.setModsComment(updatedEvent.getModsComment());
         }
     }
 

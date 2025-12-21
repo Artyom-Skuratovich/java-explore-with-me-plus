@@ -18,7 +18,6 @@ import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.event.util.EventDateTimeUtils;
 import ru.practicum.ewm.event.util.EventDtoService;
-import ru.practicum.ewm.event.util.EventStatsService;
 import ru.practicum.ewm.event.util.UrlUtils;
 
 import java.time.LocalDateTime;
@@ -31,7 +30,6 @@ public class AdminEventServiceImpl implements AdminEventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventDtoService dtoService;
-    private final EventStatsService statsService;
 
     @Override
     public List<EventFullDto> findAllByCriteria(
@@ -43,6 +41,7 @@ public class AdminEventServiceImpl implements AdminEventService {
             int from,
             int size,
             HttpServletRequest request) {
+
         if (rangeStart == null) {
             rangeStart = EventDateTimeUtils.defaultStart();
         }
@@ -53,7 +52,7 @@ public class AdminEventServiceImpl implements AdminEventService {
             throw new BadRequestException("The rangeStart must be earlier than or equal to the rangeEnd");
         }
 
-        final List<Event> events = eventRepository.findAllByCriteria(
+        List<Event> events = eventRepository.findAllByCriteria(
                 users, states, categories, rangeStart, rangeEnd, PageRequest.of(from, size)
         ).stream().toList();
 
@@ -65,9 +64,10 @@ public class AdminEventServiceImpl implements AdminEventService {
     public EventFullDto update(long id, UpdateEventAdminRequest updatedEvent, HttpServletRequest request) {
         final Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
-        final Long categoryId = updatedEvent.getCategory();
 
+        final Long categoryId = updatedEvent.getCategory();
         Category category = null;
+
         if (categoryId != null) {
             category = categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new NotFoundException("Category with id=" + categoryId + " was not found"));
@@ -77,26 +77,25 @@ public class AdminEventServiceImpl implements AdminEventService {
             throw new ConflictException("The event has already been canceled");
         }
 
-        if (event.getState().equals(EventState.PUBLISHED)) {
+        if (event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("The event has already been published");
         }
 
         EventMapper.updateEventProperties(updatedEvent, event, category);
         ensureStartDateIsAtLeastAnHourAfterPublication(event.getEventDate(), event.getPublishedOn());
 
-        final EventFullDto dto = dtoService.buildFullDto(
+        return dtoService.buildFullDto(
                 eventRepository.save(event),
                 EventDateTimeUtils.defaultStart(),
                 EventDateTimeUtils.defaultEnd(),
                 UrlUtils.removeTrailingNumberSegment(request.getRequestURI())
         );
-
-        return dto;
     }
 
     public static void ensureStartDateIsAtLeastAnHourAfterPublication(
             LocalDateTime startDate,
             LocalDateTime publicationDate) {
+
         if (publicationDate != null && startDate.isBefore(publicationDate.plusHours(1))) {
             throw new ConflictException("Start date must be at least one hour after publication date");
         }
